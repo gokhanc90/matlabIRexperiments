@@ -1,0 +1,27 @@
+function criterion = criteriaFunFineTree(trainX2,trainY2,testX,testY)
+%CRITERIAFUN Summary of this function goes here
+%   Detailed explanation goes here
+LabelsY=categorical(trainY2(:,3));
+
+% %FineTree%
+Mdl = fitctree(...
+    trainX2, ...
+    LabelsY, ...
+    'SplitCriterion', 'gdi', ...
+    'MaxNumSplits', 30, ...
+    'Surrogate', 'off', ...
+    'ClassNames', categorical({'0'; '1'}));
+% 
+
+%-------------------------------------------------%
+
+[pred,ci] = predict(Mdl,testX);
+if ~iscategorical(pred) 
+    error('Predictions must be categorical')
+end
+ [ms, significant, m1, m2, oracle ] = AverageNDCG(testY,pred);
+
+
+criterion=1-ms;
+end
+
