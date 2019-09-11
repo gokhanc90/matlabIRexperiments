@@ -2,6 +2,7 @@ trainY=[table2array(ScoresFiltered) double(table2array(Label))-1];
 trainX=table2array(SelectedFeatures);
 [numSample, featureSize]=size(trainX);
 
+%
 functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunDiscriminateQuadratic ,@criteriaFunEnsembleRUSBoost ,...
 	@criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
 	@criteriaFunMediumKNN ,@criteriaFunSVM };
