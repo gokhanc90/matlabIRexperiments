@@ -1,13 +1,13 @@
 %-----INIT----------------
-% Filtered=MQ09TypeQ(MQ09TypeQ.AllSameAllZero == '0',:);
- SelectedFeatures=Filtered(:,[10  11 12 13   16 17  19 20 21    24  29 27 32]);
+ %Filtered=MQ09TypeQ(MQ09TypeQ.AllSameAllZero == '0',:);
+ SelectedFeatures=Filtered(:,[10:end]);
  SelectedFeatures=fillmissing(SelectedFeatures,'constant',0);
 Label=Filtered(:,4);
 oracleFiltered=Filtered(:,5);
 ScoresFiltered=Filtered(:,[6 7 8]);
 %---------------------------------------
 %runtopic=Filtered(:,5:8);
-AllFeatures=1;
+AllFeatures=0;
 fileID = fopen('runtopic.txt','a');
  %functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunDiscriminateQuadratic ,@criteriaFunEnsembleRUSBoost ,...
  %	@criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
@@ -23,7 +23,7 @@ Y=[table2array(ScoresFiltered) double(table2array(Label))-1];
 
 [m, n]=size(SelectedFeatures);
 
-if AllFeatures==0
+if AllFeatures==1
     for S =1:n
         X=table2array(SelectedFeatures(:,[1:S-1,S+1:end]));
         for K = 1 : length(functions)
@@ -46,8 +46,8 @@ if AllFeatures==0
             fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f Discard: %s\n',func2str(functions{K}),...
                 ms,significant,m1,m2,m3,oracle, SelectedFeatures.Properties.VariableNames{S});
 
-            runtopic(:,S+4)=table(predictionScores);
-            runtopic.Properties.VariableNames{S+4}=SelectedFeatures.Properties.VariableNames{S};
+  %          runtopic(:,S+4)=table(predictionScores);
+   %         runtopic.Properties.VariableNames{S+4}=SelectedFeatures.Properties.VariableNames{S};
         end
     end
 else
@@ -72,8 +72,8 @@ else
         fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f Discard: %s\n',func2str(functions{K}),...
             ms,significant,m1,m2,m3,oracle, 'All');
         
-%        runtopic(:,end)=table(predictionScores);
-%        runtopic.Properties.VariableNames{end}='All';
+  %      runtopic(:,end)=table(predictionScores);
+  %      runtopic.Properties.VariableNames{end}='All';
 
     end
 end
