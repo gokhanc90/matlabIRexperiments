@@ -4,19 +4,23 @@
 %'VarSCQ','SCCSNoStem','MeanSCCQNoStem','VarSCCQNoStem','MeanCommonalityKStem',
 %'VarCommonalityKStem','SCCSKStem','MeanSCCQKStem','VarSCCQKStem',
 %'MeanCommonalitySnowball','VarCommonalitySnowball','SCCSSnowball',
-%'MeanSCCQSnowball','VarSCCQSnowball','Chi2DFTF','Chi2IdfIctf','Chi2SCQ','Chi2Commonalities'}
+%'MeanSCCQSnowball','VarSCCQSnowball','Chi2DFTF','Chi2IdfIctf','Chi2SCQ','Chi2SCCQ','Chi2Commonalities'}
 
- Filtered=MQ09TypeQ1(MQ09TypeQ1.AllSameAllZero == '0',:);
- SelectedFeatures=Filtered(:,{'Gamma','Omega','SCS','VarCTI','VarSkew',...
-     'Chi2DFTF','Chi2SCQ','Chi2IdfIctf','VarCommonalitySnowball','VarSCCQSnowball'});
+ Filtered=MQ09TypeQ(MQ09TypeQ.AllSameAllZero == '0',:);
+ SelectedFeatures=Filtered(:,{'Gamma','Omega','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF',...
+'MeanCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ',...
+'VarSCQ','SCCSNoStem','MeanSCCQNoStem','VarSCCQNoStem','MeanCommonalityKStem',....
+'SCCSKStem','MeanSCCQKStem','VarSCCQKStem',...
+'MeanCommonalitySnowball','VarCommonalitySnowball','SCCSSnowball',...
+'MeanSCCQSnowball','VarSCCQSnowball','Chi2DFTF','Chi2IdfIctf','Chi2SCQ','Chi2Commonalities'});
  SelectedFeatures=fillmissing(SelectedFeatures,'constant',0);
 Label=Filtered(:,4);
 oracleFiltered=Filtered(:,5);
 ScoresFiltered=Filtered(:,[6 7 8]);
 %---------------------------------------
 %runtopic=Filtered(:,5:8);
-AllFeatures=1;
-fileID = fopen('runtopic.txt','a');
+AllFeatures=0;
+fileID = fopen('runtopic3.txt','a');
 % functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunDiscriminateQuadratic ,@criteriaFunEnsembleRUSBoost ,...
 % @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
 % 	@criteriaFunMediumKNN ,@criteriaFunSVM };
@@ -29,8 +33,11 @@ Y=[table2array(ScoresFiltered) double(table2array(Label))-1];
 [m, n]=size(SelectedFeatures);
 
 if AllFeatures==0
-    for S =1:n
-        X=table2array(SelectedFeatures(:,[1:S-1,S+1:end]));
+    for S =[2:4,34:n-1]
+        C=nchoosek(SelectedFeatures.Properties.VariableNames,uint16(S));
+        for Ci = 1:length(C)
+        %X=table2array(SelectedFeatures(:,[1:S-1,S+1:end]));
+        X=table2array(SelectedFeatures(:,C(Ci,:)));
         for K = 1 : length(functions)
 
             predictionScores=zeros(m,1);
@@ -48,9 +55,9 @@ if AllFeatures==0
             end
 
             [ms, significant, m1, m2, m3, oracle ] = AverageNDCG(table2array(ScoresFiltered),predictedlabel);
-            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f Discard: %s\n',func2str(functions{K}),...
-                ms,significant,m1,m2,m3,oracle, SelectedFeatures.Properties.VariableNames{S});
-
+            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f FeatureSize: %f Feature: %s\n',func2str(functions{K}),...
+                ms,significant,m1,m2,m3,oracle, S, string(strjoin(C(Ci,:))));
+        end
        %    runtopic(:,S+4)=table(predictionScores);
        %    runtopic.Properties.VariableNames{S+4}=SelectedFeatures.Properties.VariableNames{S};
         end
@@ -74,7 +81,7 @@ else
         end
 
         [ms, significant, m1, m2, m3, oracle ] = AverageNDCG(table2array(ScoresFiltered),predictedlabel);
-        fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f Discard: %s\n',func2str(functions{K}),...
+        fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f KStemMean: %f SnowballMean: %f Oracle: %f  %s\n',func2str(functions{K}),...
             ms,significant,m1,m2,m3,oracle, 'All');
         
    %     runtopic(:,end)=table(predictionScores);
