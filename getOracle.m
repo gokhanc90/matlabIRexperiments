@@ -1,13 +1,16 @@
 % Generate Oracle and test whether it (ORACLE) is statistical significant to the
 % both given systems.
-function [p,isSig,oracle] = getOracle(l1,l2)
+%First one is nostem
+function [p,isSig,oracle,label] = getOracle(l1,l2)
     [m,n]=size(l1);
     oracle=zeros(m,1);
+    label=zeros(m,1);
     for i=1:m
         if l1(i,1)>=l2(i,1)
             oracle(i,1)=l1(i,1);
         else
             oracle(i,1)=l2(i,1);
+            label(i,1)=1;
         end
     end
 
@@ -25,6 +28,5 @@ function [p,isSig,oracle] = getOracle(l1,l2)
     if h1==1 && h2==1
         isSig=1;
     end
-    
 end
 

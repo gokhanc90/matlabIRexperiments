@@ -11,14 +11,14 @@ opts = spreadsheetImportOptions("NumVariables", 8);
 
 % Specify sheet and range
 opts.Sheet = "NDCG100Transposed";
-opts.DataRange = "BN2:BU1525";
+opts.DataRange = "L2:S151";
 
 % Specify column names and types
 opts.VariableNames = ["RID","NoStem","KStemQBS","SnowballEngQBS","HPS","Gupta","KStem" ,"SnowballEng"];
 opts.VariableTypes = ["double", "double", "double", "double", "double", "double", "double", "double"];
 
 % Import the data
-MQ07_NDCG100_DFRee = readtable("/home/ubuntu/Desktop/Data/Sonuçlar/MQ07RuntopicsTransposed.xlsx", opts, "UseExcel", false);
+WSJ_NDCG100_DFIC = readtable("/home/ubuntu/Desktop/Data/Sonuçlar/WSJRuntopics.xlsx", opts, "UseExcel", false);
 
 
 %% Clear temporary variables
