@@ -4,7 +4,7 @@ STEMMERS={'KStem'};
 TWS={'BM25'};
 %MEASURES={'MAP' 'NDCG20' 'NDCG100'};
 MEASURES={'NDCG20'};
-COLLECTIONS={'CW12B' 'CW09B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 
 
 for s = 1:size(STEMMERS,2)
@@ -18,43 +18,54 @@ for s = 1:size(STEMMERS,2)
                     %Sf=[1   4   5  11  13  15  17  19  20  21  22  23  24  27  30  31  32  33]; %MQ09
                     %Sf=[2   7   9  12  16  20  22  23  25  27  28  29  30  34  36  37]; %NTCIR
                     %Sf=[1   4   6   7  10  11  12  19  20  22  29  33  34  35  36]; %CW09B
-                    Sf=[5   6   8   9  10  11  13  18  20  26  27  36  37 38]; %WSJ
+                    %Sf=[5   6   8   9  10  11  13  18  20  26  27  36  37 38]; %WSJ
+                    
+                    docCount = CollectionStats.(strcat(COLLECTIONS{coll},'DocCount'));
+                    TF = CollectionStats.(strcat(COLLECTIONS{coll},'TermCount'));
                     
                     dataNameR = strcat(COLLECTIONS{coll},'_',MEASURES{measure},'_',TWS{tw});
                     runtopic = eval(dataNameR);
 
+                    
                     dataNameF = strcat('Feature',COLLECTIONS{coll},STEMMERS{s});
                     features = eval(dataNameF);
 
-
-                    %-----INIT----------------
-                    %{'Gamma','Omega','AvgPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF',...
-                    %'MeanCTI','VarCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',...
-                    %'SCCSNoStem','MeanSCCQNoStem','VarSCCQNoStem',...
-                    %'MeanCommonalityKStem','VarCommonalityKStem','SCCSKStem','MeanSCCQKStem','VarSCCQKStem',...
-                    %'MeanCommonalitySnowball','VarCommonalitySnowball','SCCSSnowball','MeanSCCQSnowball','VarSCCQSnowball',...
-                    %'Chi2DFTF','Chi2IdfIctf','Chi2SCQ','Chi2Commonalities','Chi2SCCQ',...
-                    %'MeanSCCS','HarmMeanSCCS','MeanVarCommonality','MeanVarSCCQ',...
-                    %'BM25CollNoStem','BM25CollKStem','BM25CollSnowball',...
-                    %'AdvanceKStem','AdvanceSnowball','BM25AdvKStem','BM25AdvSnowball'...
-                    %}
+                    dataNameFTerms = strcat(dataNameF,'Term');    
+                    terms=eval(dataNameFTerms);
+                    terms.IdfAdvDF=terms.idfs .* terms.advanceDF;
+                    terms.CtiAdvDF=terms.ctis .* terms.advanceDF;
+                    terms.idfStem = log(docCount ./ terms.DF);
+                    terms.idfRatio = terms.idfStem ./ terms.idfs;
+                    termAgg1 = groupsummary(terms,'QueryID',{'mean','max','sum','var'},'IdfAdvDF');
+                    termAgg2 = groupsummary(terms,'QueryID',{'mean','max','sum','var'},'CtiAdvDF');
+                    termAgg3 = groupsummary(terms,'QueryID',{'mean','max','sum','var','min'},'idfRatio');
+                    
+                    
                     Joined = join(features,runtopic,'LeftKeys',1,'RightKeys',1);
+                    Joined = join(Joined,termAgg1,'LeftKeys',1,'RightKeys',1);
+                    Joined = join(Joined,termAgg2,'LeftKeys',1,'RightKeys',1);
+                    Joined = join(Joined,termAgg3,'LeftKeys',1,'RightKeys',1);
+                    Joined.idfRatioMinMax = Joined.min_idfRatio ./ Joined.max_idfRatio;
                     % Filtered=MQ07TypeQ(MQ07TypeQ.AllSameAllZero == '0',:);
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',...
                     'VarCTI','MaxCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',...
                     'MaxSCQ','SumSCQ','MeanCommonality','VarCommonality','SCCS','MeanSCCQ','VarSCCQ',...
-                    'MeanAdvance','MaxAdvance','VarAdvance','MeanAdvanceTF','MaxAdvanceTF','VarAdvanceTF',...
-                    'MeanAdvanceDF','MaxAdvanceDF','VarAdvanceDF',...
                     'AvgQL',...
                     TWS{tw},...
-                    'WordCount'
+                    'WordCount','sum_IdfAdvDF','mean_IdfAdvDF','max_IdfAdvDF',...
+                     'sum_CtiAdvDF','mean_CtiAdvDF','max_CtiAdvDF',...
+                     'sum_idfRatio','mean_idfRatio','max_idfRatio','min_idfRatio',...
+                     'idfRatioMinMax'
                      });
                     
-                 SelectedFeatures.WordCount=double(SelectedFeatures.WordCount)+1;
+                     SelectedFeatures.WordCount=double(SelectedFeatures.WordCount)+1;
                     
                      SelectedFeatures=fillmissing(SelectedFeatures,'constant',0);
-                    SelectedFeatures=SelectedFeatures(:,Sf);
+                    
+                     %SelectedFeatures=SelectedFeatures(:,Sf);
+                    
+                    
                     [p,isSig,oracle,label]=getOracle(Joined.NoStem,Joined.(STEMMERS{s}));
                     Scores=Joined(:,{'NoStem',STEMMERS{s}});
 
@@ -71,11 +82,11 @@ for s = 1:size(STEMMERS,2)
                     option=2; %0:combination 1:remove add else: all
 
                     fileID = fopen('runtopic.txt','a');
-                    % functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunDiscriminateQuadratic ,@criteriaFunEnsembleRUSBoost ,...
-                    % @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
-                    % 	@criteriaFunMediumKNN ,@criteriaFunSVM }; , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost
+                     functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
+                     @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
+                     	@criteriaFunMediumKNN ,@criteriaFunSVM }; % , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic 
 
-                    functions={@criteriaFunGaussianNaiveBayes};
+                    %functions={@criteriaFunGaussianNaiveBayes};
 
 
                     Y=[table2array(Scores) label];
