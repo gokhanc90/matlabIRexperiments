@@ -57,8 +57,8 @@ for s = 1:size(STEMMERS,2)
 %                             else
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s});
 %                             end
-                    Sf=[ 1 2 10 18 27 30 41 47 48 52 55 56]; %CW09B
-                    %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
+                    Sf=[ 1 5 6 7 8  9  10  11 12  19  20  24  26  27  28 30 31 33 36 37  38  39 42  43 45 47 ];
+                    
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
                     'VarCTI','MaxCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',... %19
@@ -71,9 +71,9 @@ for s = 1:size(STEMMERS,2)
                      'sum_CtiAdvDF','mean_CtiAdvDF','max_CtiAdvDF'... %38
                      'sum_idfRatio','mean_idfRatio','max_idfRatio','min_idfRatio',... %42
                      'mean_idfStem','max_idfStem','var_idfStem',... %45
-                     'idfRatioMinMax','correlationTermsIdf','lstmstTermsDF','GammaStem'... %49
+                     'idfRatioMinMax','correlationTerms','lstmstTerms','GammaStem'... %49
                      'sum_IdfAdvDF','mean_IdfAdvDF','max_IdfAdvDF','min_IdfAdvDF', ... %53
-                     'Chi2DFTF','correlationTermsIctf','lstmstTermsTF'
+                     'Chi2DFTF'
                      });
 %                             SelectedFeaturesT = JoinedT(:,SelectedFeatures.Properties.VariableNames);
                     
@@ -93,10 +93,19 @@ for s = 1:size(STEMMERS,2)
  %                         [pT,isSigT,oracleT,labelT]=getOracle(JoinedT.NoStem,JoinedT.(STEMMERS{s}));
  %                         ScoresT=JoinedT(:,{'NoStem',STEMMERS{s}});
 
+                    % 
+                    %  [idx,weights] = relieff(table2array(SelectedFeatures),table2array(Label),20);
+                    %   poz=weights>0
+                    %   pf=idx(poz)
+                    %   vn=SelectedFeatures.Properties.VariableNames(pf)
+                    %   SelectedFeatures = SelectedFeatures(:,vn);
+                    %  
+                    %---------------------------------------
+                    %runtopic=Filtered(:,5:8);
 
                     option=2; %0:combination 1:remove add else: all
 
-                    fileID = fopen('runtopic4.txt','a');
+                    fileID = fopen('runtopic2.txt','a');
                     % functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
                     % @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
                     % 	@criteriaFunMediumKNN ,@criteriaFunSVM }; % , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic 
@@ -110,43 +119,35 @@ for s = 1:size(STEMMERS,2)
                     [m, n]=size(SelectedFeatures);
 
                     if option==0
-                        Core=[1 2 10 18 27 30 41 47 48 52 55 56];
-                            
-                          for S =[3:9,11:17,19:26,28,29,31:40,42:46,49:51,53,54]
-   
-                            SubFeatures=SelectedFeatures(:,[S Core]);
-                            X=table2array(SubFeatures);
-                            
+                        for S =[2:4,34:n-1]
+                            C=nchoosek(SelectedFeatures.Properties.VariableNames,uint16(S));
+                            for Ci = 1:length(C)
+                            %X=table2array(SelectedFeatures(:,[1:S-1,S+1:end]));
+                            X=table2array(SelectedFeatures(:,C(Ci,:)));
                             for K = 1 : length(functions)
+
                                 predictionScores=zeros(m,1);
                                 predictedlabel=categorical(zeros(m,1));
                                 for i=1:m
                                     Xtest=X(i,:);
                                     Xtrain=X([1:i-1,i+1:end],:);
-    %                                         Xtrain=[Xtrain;XT];
 
                                     Ytest=Y(i,:);
                                     Ytrain=Y([1:i-1,i+1:end],:);
-    %                                         Ytrain=[Ytrain;YT];
 
-    %                                 diff=abs(Ytrain(:,1)-Ytrain(:,2));
-    %                                  trainSetInx = diff > std(diff) / sqrt(size(diff,1));
-    % %                                 
-                                    trainSetInx = Ytrain(:,1) ~= Ytrain(:,2) ; %Discard All same all zero 
-                                      Xtrain=Xtrain(trainSetInx,:);
-                                      Ytrain=Ytrain(trainSetInx,:);
-
-                                    [criterion, ms, significant, m1, m2, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest);
+                                    [criterion, ms, significant, m1, m2,m3, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest);
                                     predictionScores(i)=ms; 
                                     predictedlabel(i)=labels;
                                 end
 
-                            [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f Add: %d %s %s %s\n',func2str(functions{K}),...
-                                ms,significant,m1,m2,oracle,S,dataNameR,dataNameF,strjoin(SubFeatures.Properties.VariableNames));
-                           
-                         end
-                      end
+                                [ms, significant, m1, m2, oracle ] = AverageNDCG(table2array(Scores),predictedlabel);
+                                fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f FeatureSize: %f Feature: %s\n',func2str(functions{K}),...
+                                    ms,significant,m1,m2,oracle, S, string(strjoin(C(Ci,:))));
+                            end
+                           %    runtopic(:,S+4)=table(predictionScores);
+                           %    runtopic.Properties.VariableNames{S+4}=SelectedFeatures.Properties.VariableNames{S};
+                            end
+                        end
                     elseif  option==1   
                         for S =1:n
                             %X=table2array(SelectedFeatures(:,S));
@@ -280,83 +281,83 @@ function dftfTable = chi2(DFTFs)
         
 end
 
+
+function corrTable = IdfOrderDist(noStemTerms, stemTerms) 
+    QIDNoStem = unique(noStemTerms.QueryID);
+    QIDStem = unique(noStemTerms.QueryID);
+    
+    if ~isequal(QIDNoStem,QIDStem) 
+        error('QIDS not equal')
+    end
+    
+    QIDs = QIDNoStem;
+    clear QIDNoStem
+    clear QIDStem
+    corrTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','correlationTerms'});
+    
+    for i=1:size(QIDs,1)
+        termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
+        termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
+        
+        wordCount=size(termsNoStem,1);
+        order=1:wordCount;
+        termsNoStem.Position = order';
+        termsStem.Position = order';
+        
+       
+        termsNoStem = sortrows(termsNoStem, 'idfs'); % sort the table by 'DOB'
+        
+        termsStem = sortrows(termsStem, 'idfStem'); % sort the table by 'DOB'
+        
+        %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
+        c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
+  
+        corrTable.correlationTerms(corrTable.QueryID == QIDs(i))=c;
+      
+    end
+        
+end
 % 
-% function corrTable = IdfOrderDist(noStemTerms, stemTerms) 
-%     QIDNoStem = unique(noStemTerms.QueryID);
-%     QIDStem = unique(noStemTerms.QueryID);
-%     
-%     if ~isequal(QIDNoStem,QIDStem) 
-%         error('QIDS not equal')
-%     end
-%     
-%     QIDs = QIDNoStem;
-%     clear QIDNoStem
-%     clear QIDStem
-%     corrTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','correlationTerms'});
-%     
-%     for i=1:size(QIDs,1)
-%         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
-%         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
-%         
-%         wordCount=size(termsNoStem,1);
-%         order=1:wordCount;
-%         termsNoStem.Position = order';
-%         termsStem.Position = order';
-%         
-%        
-%         termsNoStem = sortrows(termsNoStem, 'idfs'); % sort the table by 'DOB'
-%         
-%         termsStem = sortrows(termsStem, 'idfStem'); % sort the table by 'DOB'
-%         
-%         %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
-%         c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
-%   
-%         corrTable.correlationTerms(corrTable.QueryID == QIDs(i))=c;
-%       
-%     end
-%         
-% end
-% 
-% function lstmstTable = LSTMST(noStemTerms, stemTerms)
-%     QIDNoStem = unique(noStemTerms.QueryID);
-%     QIDStem = unique(noStemTerms.QueryID);
-%     
-%     if ~isequal(QIDNoStem,QIDStem) 
-%         error('QIDS not equal')
-%     end
-%     
-%     QIDs = QIDNoStem;
-%     clear QIDNoStem
-%     clear QIDStem
-%     lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTerms'});
-%     
-%     for i=1:size(QIDs,1)
-%         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
-%         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
-%         
-%         wordCount = size(termsNoStem,1);
-%         order=1:wordCount;
-%         termsNoStem.Position = order';
-%         termsStem.Position = order';
-%         
-%        
-%         termsNoStem = sortrows(termsNoStem, 'idfs','ascend'); % sort the table by 'DOB'
-%         
-%         termsStem = sortrows(termsStem, 'idfStem','ascend'); % sort the table by 'DOB'
-%         
-%         c=0;
-%         if(termsNoStem.Position(1) == termsStem.Position(1)) 
-%             c=c+0.5;
-%         end
-%         if(termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
-%             c=c+0.5;
-%         end
-%         
-%         lstmstTable.lstmstTerms(lstmstTable.QueryID == QIDs(i))=c;
-%     end
-%         
-% end
-% 
+function lstmstTable = LSTMST(noStemTerms, stemTerms)
+    QIDNoStem = unique(noStemTerms.QueryID);
+    QIDStem = unique(noStemTerms.QueryID);
+    
+    if ~isequal(QIDNoStem,QIDStem) 
+        error('QIDS not equal')
+    end
+    
+    QIDs = QIDNoStem;
+    clear QIDNoStem
+    clear QIDStem
+    lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTerms'});
+    
+    for i=1:size(QIDs,1)
+        termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
+        termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
+        
+        wordCount = size(termsNoStem,1);
+        order=1:wordCount;
+        termsNoStem.Position = order';
+        termsStem.Position = order';
+        
+       
+        termsNoStem = sortrows(termsNoStem, 'idfs','ascend'); % sort the table by 'DOB'
+        
+        termsStem = sortrows(termsStem, 'idfStem','ascend'); % sort the table by 'DOB'
+        
+        c=0;
+        if(termsNoStem.Position(1) == termsStem.Position(1)) 
+            c=c+0.5;
+        end
+        if(termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+            c=c+0.5;
+        end
+        
+        lstmstTable.lstmstTerms(lstmstTable.QueryID == QIDs(i))=c;
+    end
+        
+end
+
 
 %min/max
 function gamma1Table = Gamma1(stemTerms)
@@ -508,86 +509,86 @@ end
 
 
 
+% 
+% function lstmstTable = LSTMST(noStemTerms, stemTerms)
+%     QIDNoStem = unique(noStemTerms.QueryID);
+%     QIDStem = unique(noStemTerms.QueryID);
+%     
+%     if ~isequal(QIDNoStem,QIDStem) 
+%         error('QIDS not equal')
+%     end
+%     
+%     QIDs = QIDNoStem;
+%     clear QIDNoStem
+%     clear QIDStem
+%     
+%     lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTermsDF'});
+%     for i=1:size(QIDs,1)
+%         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
+%         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
+%         
+%         wordCount = size(termsNoStem,1);
+%         order=1:wordCount;
+%         termsNoStem.Position = order';
+%         termsStem.Position = order';
+%         
+%        
+%         termsNoStem = sortrows(termsNoStem, 'idfs','ascend'); % sort the table by 'DOB'
+%         
+%         termsStem = sortrows(termsStem, 'idfStem','ascend'); % sort the table by 'DOB'
+%         
+%         
+%         if(termsNoStem.Position(1) == termsStem.Position(1) || termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+%             predictedLabel=1;
+%         else
+%             predictedLabel=0;
+%         end
+%         
+%         lstmstTable.lstmstTermsDF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+%     end
+%         
+% end
+% 
 
-function lstmstTable = LSTMST(noStemTerms, stemTerms)
-    QIDNoStem = unique(noStemTerms.QueryID);
-    QIDStem = unique(noStemTerms.QueryID);
-    
-    if ~isequal(QIDNoStem,QIDStem) 
-        error('QIDS not equal')
-    end
-    
-    QIDs = QIDNoStem;
-    clear QIDNoStem
-    clear QIDStem
-    
-    lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTermsDF'});
-    for i=1:size(QIDs,1)
-        termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
-        termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
-        
-        wordCount = size(termsNoStem,1);
-        order=1:wordCount;
-        termsNoStem.Position = order';
-        termsStem.Position = order';
-        
-       
-        termsNoStem = sortrows(termsNoStem, 'idfs','ascend'); % sort the table by 'DOB'
-        
-        termsStem = sortrows(termsStem, 'idfStem','ascend'); % sort the table by 'DOB'
-        
-        
-        if(termsNoStem.Position(1) == termsStem.Position(1) || termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
-            predictedLabel=1;
-        else
-            predictedLabel=0;
-        end
-        
-        lstmstTable.lstmstTermsDF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
-    end
-        
-end
-
-
-function corrTable = IdfOrderDist(noStemTerms, stemTerms) 
-    QIDNoStem = unique(noStemTerms.QueryID);
-    QIDStem = unique(noStemTerms.QueryID);
-    
-    if ~isequal(QIDNoStem,QIDStem) 
-        error('QIDS not equal')
-    end
-    
-    QIDs = QIDNoStem;
-    clear QIDNoStem
-    clear QIDStem
-    corrTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','correlationTermsIdf'});
-    for i=1:size(QIDs,1)
-        termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
-        termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
-        
-        wordCount=size(termsNoStem,1);
-        order=1:wordCount;
-        termsNoStem.Position = order';
-        termsStem.Position = order';
-        
-       
-        termsNoStem = sortrows(termsNoStem, 'idfs'); % sort the table by 'DOB'
-        
-        termsStem = sortrows(termsStem, 'idfStem'); % sort the table by 'DOB'
-        
-        %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
-        c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
-        if( c> 0.5 ) 
-            predictedLabel=1;
-        else
-            predictedLabel=0;
-        end
-        
-        corrTable.correlationTermsIdf(corrTable.QueryID == QIDs(i))=predictedLabel;
-    end
-        
-end
-
+% function corrTable = IdfOrderDist(noStemTerms, stemTerms) 
+%     QIDNoStem = unique(noStemTerms.QueryID);
+%     QIDStem = unique(noStemTerms.QueryID);
+%     
+%     if ~isequal(QIDNoStem,QIDStem) 
+%         error('QIDS not equal')
+%     end
+%     
+%     QIDs = QIDNoStem;
+%     clear QIDNoStem
+%     clear QIDStem
+%     corrTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','correlationTermsIdf'});
+%     for i=1:size(QIDs,1)
+%         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
+%         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
+%         
+%         wordCount=size(termsNoStem,1);
+%         order=1:wordCount;
+%         termsNoStem.Position = order';
+%         termsStem.Position = order';
+%         
+%        
+%         termsNoStem = sortrows(termsNoStem, 'idfs'); % sort the table by 'DOB'
+%         
+%         termsStem = sortrows(termsStem, 'idfStem'); % sort the table by 'DOB'
+%         
+%         %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
+%         c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
+%         if( c> 0.5 ) 
+%             predictedLabel=1;
+%         else
+%             predictedLabel=0;
+%         end
+%         
+%         corrTable.correlationTermsIdf(corrTable.QueryID == QIDs(i))=predictedLabel;
+%     end
+%         
+% end
+% 
 
 
 function lstmstTable = LSTMSTTF(noStemTerms, stemTerms)
