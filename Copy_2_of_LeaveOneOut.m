@@ -17,7 +17,7 @@ STEMMERS={'KStem'};
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
 MEASURES={'NDCG20'};
-COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' };
 %COLLECTIONS={ 'CW09B'};
 
 
@@ -57,7 +57,7 @@ for s = 1:size(STEMMERS,2)
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s},TF);
 %                             end
 %                             Joined=vertcat(Joined,JoinedT);
-                    Sf=[ 1 2 10 18 27 30 41 47 48 52 55 56 ]; %CW09B
+                    Sf=[ 1 2 10 18 27 30 41 47  49 53 56  58]; %CW09B
                     %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
@@ -71,10 +71,9 @@ for s = 1:size(STEMMERS,2)
                      'sum_CtiAdvDF','mean_CtiAdvDF','max_CtiAdvDF'... %38
                      'sum_idfRatio','mean_idfRatio','max_idfRatio','min_idfRatio',... %42
                      'mean_idfStem','max_idfStem','var_idfStem',... %45
-                     'idfRatioMinMax','correlationTermsIdf','lstmstTermsDF','GammaStem'... %49
-                     'sum_IdfAdvDF','mean_IdfAdvDF','max_IdfAdvDF','min_IdfAdvDF', ... %53
-                     'Chi2DFTF','correlationTermsIctf','lstmstTermsTF',... %56
-                     'sum_TFIdfNoStem','sum_TFIdfStem'
+                     'idfRatioMinMax','correlationTermsIdf','lstTermsDF','mstTermsDF','GammaStem'... %50
+                     'sum_IdfAdvDF','mean_IdfAdvDF','max_IdfAdvDF','min_IdfAdvDF', ... %54
+                     'Chi2DFTF','correlationTermsIctf','lstTermsTF','mstTermsTF'
                      });
 %                             SelectedFeaturesT = JoinedT(:,SelectedFeatures.Properties.VariableNames);
                     
@@ -111,9 +110,9 @@ for s = 1:size(STEMMERS,2)
                     [m, n]=size(SelectedFeatures);
 
                     if option==0
-                        %Core=[1 2 10 18 27 30 41 47 48 52 55 56];
-                        Core=[1 2 10 18 27  41 47 48 52 55 56 57 58 49];    
-                          for S =[3:9,11:17,19:26,28,29,30,31:40,42:46,50,51,53,54]
+                        Core=[ 1 2 10 18 27 30 41 47 48 49 53 56 57 58];
+                            
+                          for S =[3:9,11:17,19:26,28,29,31:40,42:46,49:52,54,55]
    
                             SubFeatures=SelectedFeatures(:,[S Core]);
                             X=table2array(SubFeatures);
@@ -201,39 +200,21 @@ for s = 1:size(STEMMERS,2)
                                 Ytrain=Y([1:i-1,i+1:end],:);
 %                                         Ytrain=[Ytrain;YT];
                                 
+%                                 diff=abs(Ytrain(:,1)-Ytrain(:,2));
+%                                  trainSetInx = diff > 0.10*(std(diff) / sqrt(size(diff,1)));
+% %                                 
+                                trainSetInx = Ytrain(:,1) ~= Ytrain(:,2) ; %Discard All same all zero 
+                                  Xtrain=Xtrain(trainSetInx,:);
+                                  Ytrain=Ytrain(trainSetInx,:);
 
-                               trainSetInx = Ytrain(:,1) ~= Ytrain(:,2) ; %Discard All same all zero 
-                               Xtrain=Xtrain(trainSetInx,:);
-                               Ytrain=Ytrain(trainSetInx,:);
-
-%                                   diff=abs(Ytrain(:,1)-Ytrain(:,2));
-%                                 %  pd = fitdist(diff,'poisson');
-%                                  trainSetInx = diff < 0.15*(std(diff)/sqrt(size(diff,1)));
-%                                   Xtrain=Xtrain(~trainSetInx,:);
-%                                  Ytrain=Ytrain(~trainSetInx,:);
-                                  
                                 [criterion, ms, significant, m1, m2, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest);
                                 predictionScores(i)=ms; 
                                 predictedlabel(i)=labels;
                             end
 
-                            % Accuracy
-                            o = categorical(Y(:,3));
-                            diffInx = Y(:,1) ~= Y(:,2);
-                            predictedD=predictedlabel(diffInx,:);
-                            oD=o(diffInx,:);
-                            TP = sum(predictedD==oD);
-                            TP=TP+(m-sum(~diffInx));
-                            
-                            NoTP=sum('0'==oD);
-                            NoTP=NoTP+(m-sum(~diffInx));
-                          
-                            STP=sum('1'==oD);
-                            STP=STP+(m-sum(~diffInx));
-                            
-                            [ms, significant, m1, m2, oracle,p ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s\n',func2str(functions{K}),...
-                                ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames));
+                            [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
+                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s %s\n',func2str(functions{K}),...
+                                ms,significant,m1,m2,oracle,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames));
 
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
@@ -256,14 +237,10 @@ function Joined = JoinTables(terms,features,runtopic,TF)
     terms.CtiAdvDF=terms.ctis .* terms.advanceDF;
     terms.idfRatio = terms.idfStem ./ terms.idfs;
     terms.ictfStem = log(TF./terms.TF); 
-    terms.TFIdfNoStem = terms.TFNoStem .* terms.idfs;
-    terms.TFIdfStem = terms.TF .* terms.idfStem;
     termAgg1 = groupsummary(terms,'QueryID',{'mean','max','sum','var','min'},'IdfAdvDF');
     termAgg2 = groupsummary(terms,'QueryID',{'mean','max','sum','var'},'CtiAdvDF');
     termAgg3 = groupsummary(terms,'QueryID',{'mean','max','sum','var','min'},'idfRatio');
     termAgg4 = groupsummary(terms,'QueryID',{'mean','max','var'},'idfStem');
-    termAgg5 = groupsummary(terms,'QueryID',{'sum'},'TFIdfNoStem');
-    termAgg6 = groupsummary(terms,'QueryID',{'sum'},'TFIdfStem');
 
     gamma1Table = Gamma1(terms(:,{'QueryID','word','idfStem'}));
 
@@ -272,8 +249,6 @@ function Joined = JoinTables(terms,features,runtopic,TF)
     Joined = join(Joined,termAgg2,'LeftKeys',1,'RightKeys',1);
     Joined = join(Joined,termAgg3,'LeftKeys',1,'RightKeys',1);
     Joined = join(Joined,termAgg4,'LeftKeys',1,'RightKeys',1);
-    Joined = join(Joined,termAgg5,'LeftKeys',1,'RightKeys',1);
-    Joined = join(Joined,termAgg6,'LeftKeys',1,'RightKeys',1);
     Joined.idfRatioMinMax = Joined.min_idfRatio ./ Joined.max_idfRatio;
     
     dftfTable = chi2(terms(:,{'QueryID','DFNoStem','TFNoStem','DF','TF'}));
@@ -557,7 +532,7 @@ function lstmstTable = LSTMST(noStemTerms, stemTerms)
     clear QIDNoStem
     clear QIDStem
     
-    lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTermsDF'});
+    lstmstTable = array2table([QIDs zeros(size(QIDs)) zeros(size(QIDs))],'VariableNames',{'QueryID','lstTermsDF','mstTermsDF'});
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
@@ -573,13 +548,22 @@ function lstmstTable = LSTMST(noStemTerms, stemTerms)
         termsStem = sortrows(termsStem, 'idfStem','ascend'); % sort the table by 'DOB'
         
         
-        if(termsNoStem.Position(1) == termsStem.Position(1) || termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+        if(termsNoStem.Position(1) == termsStem.Position(1) ) 
             predictedLabel=1;
         else
             predictedLabel=0;
         end
         
-        lstmstTable.lstmstTermsDF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+        lstmstTable.lstTermsDF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+        
+        
+        if( termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+            predictedLabel=1;
+        else
+            predictedLabel=0;
+        end
+        
+        lstmstTable.mstTermsDF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
     end
         
 end
@@ -637,7 +621,7 @@ function lstmstTable = LSTMSTTF(noStemTerms, stemTerms)
     QIDs = QIDNoStem;
     clear QIDNoStem
     clear QIDStem
-    lstmstTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','lstmstTermsTF'});
+    lstmstTable = array2table([QIDs zeros(size(QIDs)) zeros(size(QIDs))],'VariableNames',{'QueryID','lstTermsTF','mstTermsTF'});
     
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
@@ -653,13 +637,22 @@ function lstmstTable = LSTMSTTF(noStemTerms, stemTerms)
         
         termsStem = sortrows(termsStem, 'ictfStem','ascend'); % sort the table by 'DOB'
         
-        if(termsNoStem.Position(1) == termsStem.Position(1) || termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+        if(termsNoStem.Position(1) == termsStem.Position(1) ) 
             predictedLabel=1;
         else
             predictedLabel=0;
         end
         
-        lstmstTable.lstmstTermsTF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+        lstmstTable.lstTermsTF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+        
+        if( termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+            predictedLabel=1;
+        else
+            predictedLabel=0;
+        end
+        
+        lstmstTable.mstTermsTF(lstmstTable.QueryID == QIDs(i))=predictedLabel;
+        
     end
         
 end

@@ -1,6 +1,6 @@
 % First column NoStem, second is Stem
 % 1 means stem, 0 means noStem
-function [ms, significant, m1, m2, oracle ] = AverageNDCG(Scores,selection)
+function [ms, significant, m1, m2, oracle, p ] = AverageNDCG(Scores,selection)
     [m,n]=size(Scores);
     sellArr=zeros(m,1);
     for i=1:m
@@ -26,12 +26,18 @@ function [ms, significant, m1, m2, oracle ] = AverageNDCG(Scores,selection)
     oracle=mean(oracleArr);
     
     significant=0;
-    [h1,p] = ttest(sellArr,Scores(:,1),'Alpha',0.05);
+    [h1,p1] = ttest(sellArr,Scores(:,1),'Alpha',0.05);
     
     
-    [h2,p] = ttest(sellArr,Scores(:,2),'Alpha',0.05);
+    [h2,p2] = ttest(sellArr,Scores(:,2),'Alpha',0.05);
     
-    if  (ms<m1 || ms<m2) && (h1==1 && h2==1)
+    if p1 > p2
+        p = p1;
+    else
+        p=p2;
+    end
+    
+    if  (ms<m1 && ms<m2) && (h1==1 && h2==1)
         significant=-1;
     end
     
