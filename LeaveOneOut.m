@@ -1,14 +1,14 @@
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/Features.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CW09B.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CW12B.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/GOV2.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ07.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ08.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ09.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/NTCIR.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/WSJ.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/FeaturesTerm.mat')
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CollectionStats.mat')
+load('Features.mat');
+load('CW09B.mat');
+load('CW12B.mat');
+load('GOV2.mat');
+load('MQ07.mat');
+load('MQ08.mat');
+load('MQ09.mat');
+load('NTCIR.mat');
+load('WSJ.mat');
+load('FeaturesTerm.mat')
+load('CollectionStats.mat')
 
 
 STEMMERS={'KStem'};
