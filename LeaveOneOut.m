@@ -11,7 +11,7 @@ load('FeaturesTerm.mat')
 load('CollectionStats.mat')
 
 
-STEMMERS={'KStem'};
+STEMMERS={'SnowballEng'};
 %STEMMERS={'KStem'};
 %TWS={'BM25' 'LGD' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'PL2'};
 TWS={ 'BM25'};
@@ -57,7 +57,7 @@ for s = 1:size(STEMMERS,2)
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s},TF);
 %                             end
 %                             Joined=vertcat(Joined,JoinedT);
-                    Sf=[ 1 2 10 18 27 30 41 47 48 52 55 56 ]; %CW09B
+                    Sf=[ 1 2 10 18 27   47 48 52 54 55 56 ]; %CW09B
                     %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
@@ -298,13 +298,27 @@ function dftfTable = chi2(DFTFs)
     
     dftfTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','Chi2DFTF'});
     
+    [Nn,edgesn,binDN] = histcounts(DFTFs.DFNoStem,'BinMethod','fd');
+    [Ns,edgess,binDS] = histcounts(DFTFs.DF,'BinMethod','fd');
+    
+    [Nn,edgesn,binTN] = histcounts(DFTFs.TFNoStem,'BinMethod','fd');
+    [Ns,edgess,binTS] = histcounts(DFTFs.TF,'BinMethod','fd');
+    
+    DFTFs.BinDN = binDN;
+    DFTFs.binDS = binDS;
+    
+    DFTFs.binTN = binTN;
+    DFTFs.binTS = binTS;
+    
     for i=1:size(QIDs,1)
         terms = DFTFs(DFTFs.QueryID==QIDs(i),:);
-        obs1=[terms.DFNoStem' terms.TFNoStem'];
-        obs2=[terms.DF' terms.TF'];
+%         obs1=[terms.DFNoStem' terms.TFNoStem'];
+%         obs2=[terms.DF' terms.TF'];
+        obs1=[terms.BinDN' terms.binTN'];
+        obs2=[terms.binDS' terms.binTS'];
         c= chi2Val([obs1;obs2]);
-
-        dftfTable.Chi2DFTF(dftfTable.QueryID == QIDs(i))=c;
+        p=1-chi2cdf(c,length(obs1)-1);
+        dftfTable.Chi2DFTF(dftfTable.QueryID == QIDs(i))=p;
     end
         
 end

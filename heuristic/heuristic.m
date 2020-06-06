@@ -1,21 +1,21 @@
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/Features.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CW09B.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CW12B.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/GOV2.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ07.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ08.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/MQ09.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/NTCIR.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/WSJ.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/FeaturesTerm.mat');
-load('/home/ubuntu/Documents/MATLAB/matlabIRexperiments/CollectionStats.mat');
+load('../Features.mat');
+load('../CW09B.mat');
+load('../CW12B.mat');
+load('../GOV2.mat');
+load('../MQ07.mat');
+load('../MQ08.mat');
+load('../MQ09.mat');
+load('../NTCIR.mat');
+load('../WSJ.mat');
+load('../FeaturesTerm.mat');
+load('../CollectionStats.mat');
 
 
 
 STEMMERS={'KStem'  };
 %STEMMERS={'KStem'};
 %TWS={'BM25' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'LGD' 'PL2'};
-TWS={'LGD'};
+TWS={'BM25'};
 MEASURES={'NDCG20'};
 %MEASURES={'NDCG20'};
 COLLECTIONS={ 'CW09B' 'CW12B'  'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
@@ -81,18 +81,18 @@ for s = 1:size(STEMMERS,2)
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-                     predictedLabels = IdfOrderDist(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
-                    [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','IdfOrderDist',...
-                        ms,significant,m1,m2,oracle,dataNameR,dataNameF);
-                    X=[X, predictedLabels];
-                    
-                     predictedLabels = LSTMST(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
-                    [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMST',...
-                        ms,significant,m1,m2,oracle,dataNameR,dataNameF);
-                    X=[X, predictedLabels];
-                   
+%                      predictedLabels = IdfOrderDist(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
+%                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','IdfOrderDist',...
+%                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+%                     X=[X, predictedLabels];
+%                     
+%                      predictedLabels = LSTMST(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
+%                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMST',...
+%                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+%                     X=[X, predictedLabels];
+%                    
 %                    
                    
 %                     predictedLabels = IctfOrderChange(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
@@ -119,20 +119,26 @@ for s = 1:size(STEMMERS,2)
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-                     predictedLabels = ictfOrderDist(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
-                    [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','ictfOrderDist',...
-                        ms,significant,m1,m2,oracle,dataNameR,dataNameF);
-                    X=[X, predictedLabels];
+%                      predictedLabels = ictfOrderDist(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
+%                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','ictfOrderDist',...
+%                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+%                     X=[X, predictedLabels];
+%                     
+%                      predictedLabels = LSTMSTTF(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
+%                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMSTTF',...
+%                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+%                     X=[X, predictedLabels];
+%                     X2= X(trainSetInx,:);
+%                     Y=X2(:,1);
+%                     X2=X2(:,2:end);
+%                     
                     
-                     predictedLabels = LSTMSTTF(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+                    predictedLabels = Chi2Significance(Joined(:,{'Chi2DFTF'}));
                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMSTTF',...
+                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','Chi2Significance',...
                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
-                    X=[X, predictedLabels];
-                    X2= X(trainSetInx,:);
-                    Y=X2(:,1);
-                    X2=X2(:,2:end);
                     fclose(fileID);
             end
         end
@@ -143,13 +149,25 @@ function dftfTable = chi2(DFTFs)
     
     dftfTable = array2table([QIDs zeros(size(QIDs))],'VariableNames',{'QueryID','Chi2DFTF'});
     
+    [Nn,edgesn,binDN] = histcounts(DFTFs.DFNoStem,'BinMethod','sqrt');
+    [Ns,edgess,binDS] = histcounts(DFTFs.DF,'BinMethod','sqrt');
+    
+    [Nn,edgesn,binTN] = histcounts(DFTFs.TFNoStem,'BinMethod','sqrt');
+    [Ns,edgess,binTS] = histcounts(DFTFs.TF,'BinMethod','sqrt');
+    
+    DFTFs.BinDN = binDN;
+    DFTFs.binDS = binDS;
+    
+    DFTFs.binTN = binTN;
+    DFTFs.binTS = binTS;
+    
     for i=1:size(QIDs,1)
         terms = DFTFs(DFTFs.QueryID==QIDs(i),:);
-        obs1=[terms.DFNoStem' terms.TFNoStem'];
-        obs2=[terms.DF' terms.TF'];
+        obs1=[terms.BinDN' terms.binTN'];
+        obs2=[terms.binDS' terms.binTS'];
         c= chi2Val([obs1;obs2]);
-
-        dftfTable.Chi2DFTF(dftfTable.QueryID == QIDs(i))=c;
+        p=1-chi2cdf(c,length(obs1)-1);
+        dftfTable.Chi2DFTF(dftfTable.QueryID == QIDs(i))=p;
     end
         
 end
@@ -199,6 +217,21 @@ function gamma1Table = Gamma1(stemTerms)
     end
         
 end
+
+function predictedLabels = Chi2Significance(Chi2Vals)
+     
+    predictedLabels=zeros(size(Chi2Vals,1),1);
+    for i=1:size(Chi2Vals,1)
+        
+        if(Chi2Vals.Chi2DFTF(i) < 0.95) 
+            predictedLabels(i)=0;
+        else
+            predictedLabels(i)=1;
+        end
+    end
+        
+end
+
 
 function predictedLabels = LSTMST(noStemTerms, stemTerms)
     QIDNoStem = unique(noStemTerms.QueryID);
