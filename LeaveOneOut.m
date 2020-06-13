@@ -16,7 +16,7 @@ STEMMERS={'SnowballEng'};
 %TWS={'BM25' 'LGD' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'PL2'};
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
-MEASURES={'NDCG20'};
+MEASURES={'MAP'};
 COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 %COLLECTIONS={ 'CW09B'};
 
@@ -57,7 +57,9 @@ for s = 1:size(STEMMERS,2)
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s},TF);
 %                             end
 %                             Joined=vertcat(Joined,JoinedT);
-                    Sf=[ 1 2 10 18 27   47 48 52 54 55 56 ]; %CW09B
+            %        Sf=[ 	1 2  10 18 27   47 48  52 54 55]; %CW09B
+                    Sf=[ 1  2   4 5   7  8  9 10  12 13   15    17    ];
+                    %3   4   7   9  10  11  13  15  17  20  23  26  27  31  32  37  41  42  43  45  47  48  49  51  53  56
                     %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
@@ -85,7 +87,7 @@ for s = 1:size(STEMMERS,2)
                     SelectedFeatures=fillmissing(SelectedFeatures,'constant',0);
                     
 %                            SelectedFeaturesT=SelectedFeaturesT(:,Sf);
-                    SelectedFeatures=SelectedFeatures(:,Sf);
+                   SelectedFeatures=SelectedFeatures(:,Sf);
                     
                     
                     [p,isSig,oracle,label]=getOracle(Joined.NoStem,Joined.(STEMMERS{s}));
@@ -112,9 +114,9 @@ for s = 1:size(STEMMERS,2)
 
                     if option==0
                         %Core=[1 2 10 18 27 30 41 47 48 52 55 56];
-                        Core=[1 2 10 18 27  41 47 48 52 55 56 57 58 49];    
-                          for S =[3:9,11:17,19:26,28,29,30,31:40,42:46,50,51,53,54]
-   
+                        Core=[];    
+                          parfor S =[1:56]
+                            fileID = fopen('runtopic5.txt','a');
                             SubFeatures=SelectedFeatures(:,[S Core]);
                             X=table2array(SubFeatures);
                             
@@ -142,9 +144,9 @@ for s = 1:size(STEMMERS,2)
                                     predictedlabel(i)=labels;
                                 end
 
-                            [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f Add: %d %s %s %s\n',func2str(functions{K}),...
-                                ms,significant,m1,m2,oracle,S,dataNameR,dataNameF,strjoin(SubFeatures.Properties.VariableNames));
+                            [ms, significant, m1, m2, oracle,p ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
+                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f Add: %d %s %s %s\n',func2str(functions{K}),...
+                                ms,significant,m1,m2,oracle,p,S,dataNameR,dataNameF,strjoin(SubFeatures.Properties.VariableNames));
                            
                          end
                       end
@@ -232,8 +234,8 @@ for s = 1:size(STEMMERS,2)
                             STP=STP+(m-sum(~diffInx));
                             
                             [ms, significant, m1, m2, oracle,p ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s\n',func2str(functions{K}),...
-                                ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames));
+                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s %s\n',func2str(functions{K}),...
+                                ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
 
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
@@ -291,6 +293,8 @@ function Joined = JoinTables(terms,features,runtopic,TF)
 
     
 end
+
+
 
 %min/max
 function dftfTable = chi2(DFTFs)
