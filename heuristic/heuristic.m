@@ -55,9 +55,11 @@ for s = 1:size(STEMMERS,2)
 %                     idx=ismember(terms.QueryID,a.QueryID);
 %                    terms=terms(idx,:);
                     fileID = fopen('Heuristic.txt','a');
-               
+                    
+                    RoseAssociationRule=label;
                 
-%                     predictedLabels = IdfOrderChange(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      predictedLabels = IdfOrderChange(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,predictedLabels];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','IdfOrderChange',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
@@ -67,27 +69,30 @@ for s = 1:size(STEMMERS,2)
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','DFOrderChange',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     
-%                     bins=[50 100 150 250 500 750 1000 1250 1500 2000 5000 7500 10000];
-%                     for bin=bins
-%                         predictedLabels = DFOrderBinning(terms(:,{'QueryID','word','DFNoStem'}), terms(:,{'QueryID','word','DF'}),docCount,bin);
-%                         [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-%                         fprintf(fileID,'Func: %s %d Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','DFOrderBinning',bin,...
-%                             ms,significant,m1,m2,oracle,dataNameR,dataNameF);
-%                     end
+                    bins=[50 100 150 250 500 750 1000 1250 1500 2000 5000 7500 10000];
+                    for bin=bins
+                        predictedLabels = DFOrderBinning(terms(:,{'QueryID','word','DFNoStem'}), terms(:,{'QueryID','word','DF'}),docCount,bin);
+                        [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
+                        fprintf(fileID,'Func: %s %d Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','DFOrderBinning',bin,...
+                            ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+                    end
 %                     
-%                     predictedLabels = DFOrderBinningScott(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                     predictedLabels = DFOrderBinningFD(terms(:,{'QueryID','word','DFNoStem'}), terms(:,{'QueryID','word','DF'}));
+%                     RoseAssociationRule=[RoseAssociationRule,predictedLabels];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','DFOrderBinningScott',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-%                      predictedLabels = IdfOrderDist(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      [predictedLabels,corrIdf] = IdfOrderDist(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,corrIdf];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','IdfOrderDist',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-%                      predictedLabels = LSTMST(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      [predictedLabels,lstmstChanged] = LSTMST(terms(:,{'QueryID','word','idfs'}), terms(:,{'QueryID','word','idfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,lstmstChanged];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMST',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
@@ -96,6 +101,7 @@ for s = 1:size(STEMMERS,2)
 %                    
                    
 %                     predictedLabels = IctfOrderChange(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,predictedLabels];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','IctfOrderChange',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
@@ -113,19 +119,22 @@ for s = 1:size(STEMMERS,2)
 %                             ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     end
 %                     
-%                     predictedLabels = TFOrderBinningScott(terms(:,{'QueryID','word','TFNoStem'}), terms(:,{'QueryID','word','TF'}));
+%                     predictedLabels = TFOrderBinningFD(terms(:,{'QueryID','word','TFNoStem'}), terms(:,{'QueryID','word','TF'}));
+%                     RoseAssociationRule=[RoseAssociationRule,predictedLabels];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','TFOrderBinningScott',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-%                      predictedLabels = ictfOrderDist(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                      [predictedLabels,corrictf] = ictfOrderDist(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,corrictf];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','ictfOrderDist',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
 %                     X=[X, predictedLabels];
 %                     
-%                      predictedLabels = LSTMSTTF(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                      [predictedLabels,lstmstChanged] = LSTMSTTF(terms(:,{'QueryID','word','ictfs'}), terms(:,{'QueryID','word','ictfStem'}));
+%                      RoseAssociationRule=[RoseAssociationRule,lstmstChanged];
 %                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
 %                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','LSTMSTTF',...
 %                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
@@ -135,10 +144,11 @@ for s = 1:size(STEMMERS,2)
 %                     X2=X2(:,2:end);
 %                     
                     
-                    predictedLabels = Chi2Significance(Joined(:,{'Chi2DFTF'}));
-                    [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),predictedLabels);
-                    fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','Chi2Significance',...
-                        ms,significant,m1,m2,oracle,dataNameR,dataNameF);
+%                     predictedLabels = Chi2Significance(Joined(:,{'Chi2DFTF'}));
+%                    RoseAssociationRule=[RoseAssociationRule,predictedLabels];
+%                     [ms, significant, m1, m2, oracle ] = AverageNDCG(Y(:,[1 2]),~predictedLabels);
+%                     fprintf(fileID,'Func: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f  %s %s\n','Chi2Significance',...
+%                         ms,significant,m1,m2,oracle,dataNameR,dataNameF);
                     fclose(fileID);
             end
         end
@@ -233,7 +243,7 @@ function predictedLabels = Chi2Significance(Chi2Vals)
 end
 
 
-function predictedLabels = LSTMST(noStemTerms, stemTerms)
+function [predictedLabels,lstmstChanged] = LSTMST(noStemTerms, stemTerms)
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     
@@ -245,6 +255,7 @@ function predictedLabels = LSTMST(noStemTerms, stemTerms)
     clear QIDNoStem
     clear QIDStem
     predictedLabels=zeros(size(QIDs,1),1);
+    lstmstChanged=zeros(size(QIDs,1),2);
     
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
@@ -265,6 +276,20 @@ function predictedLabels = LSTMST(noStemTerms, stemTerms)
         else
             predictedLabels(i)=0;
         end
+        
+        if(termsNoStem.Position(1) == termsStem.Position(1)) 
+            lstmstChanged(i,1)=1;
+        else
+            lstmstChanged(i,1)=0;
+        end
+        
+        
+        if(termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+            lstmstChanged(i,2)=1;
+        else
+            lstmstChanged(i,2)=0;
+        end
+        
     end
         
 end
@@ -343,7 +368,7 @@ function predictedLabels = DFOrderChange(noStemTerms, stemTerms)
 end
 
 
-function predictedLabels = IdfOrderDist(noStemTerms, stemTerms) 
+function [predictedLabels,corrIdf] = IdfOrderDist(noStemTerms, stemTerms) 
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     
@@ -355,7 +380,7 @@ function predictedLabels = IdfOrderDist(noStemTerms, stemTerms)
     clear QIDNoStem
     clear QIDStem
     predictedLabels=zeros(size(QIDs,1),1);
-    
+    corrIdf=zeros(size(QIDs,1),1);
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
@@ -377,12 +402,14 @@ function predictedLabels = IdfOrderDist(noStemTerms, stemTerms)
         else
             predictedLabels(i)=0;
         end
+        
+        corrIdf(i)=c;
     end
         
 end
 
 
-function predictedLabels = DFOrderBinningScott(noStemTerms, stemTerms) 
+function predictedLabels = DFOrderBinningFD(noStemTerms, stemTerms) 
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     if ~isequal(QIDNoStem,QIDStem) 
@@ -524,7 +551,7 @@ end
 
 %  TF   %%%%%%%%%%%%%
 
-function predictedLabels = LSTMSTTF(noStemTerms, stemTerms)
+function [predictedLabels,lstmstChanged] = LSTMSTTF(noStemTerms, stemTerms)
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     
@@ -536,7 +563,7 @@ function predictedLabels = LSTMSTTF(noStemTerms, stemTerms)
     clear QIDNoStem
     clear QIDStem
     predictedLabels=zeros(size(QIDs,1),1);
-    
+    lstmstChanged=zeros(size(QIDs,1),2);
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
@@ -555,6 +582,19 @@ function predictedLabels = LSTMSTTF(noStemTerms, stemTerms)
             predictedLabels(i)=1;
         else
             predictedLabels(i)=0;
+        end
+        
+        if(termsNoStem.Position(1) == termsStem.Position(1)) 
+            lstmstChanged(i,1)=1;
+        else
+            lstmstChanged(i,1)=0;
+        end
+        
+        
+        if(termsNoStem.Position(wordCount) == termsStem.Position(wordCount)) 
+            lstmstChanged(i,2)=1;
+        else
+            lstmstChanged(i,2)=0;
         end
     end
         
@@ -634,7 +674,7 @@ function predictedLabels = TFOrderChange(noStemTerms, stemTerms)
 end
 
 
-function predictedLabels = ictfOrderDist(noStemTerms, stemTerms) 
+function [predictedLabels,corrictf] = ictfOrderDist(noStemTerms, stemTerms) 
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     
@@ -646,7 +686,7 @@ function predictedLabels = ictfOrderDist(noStemTerms, stemTerms)
     clear QIDNoStem
     clear QIDStem
     predictedLabels=zeros(size(QIDs,1),1);
-    
+    corrictf=zeros(size(QIDs,1),1);
     for i=1:size(QIDs,1)
         termsNoStem = noStemTerms(noStemTerms.QueryID==QIDs(i),:);
         termsStem = stemTerms(stemTerms.QueryID==QIDs(i),:);
@@ -668,12 +708,13 @@ function predictedLabels = ictfOrderDist(noStemTerms, stemTerms)
         else
             predictedLabels(i)=0;
         end
+        corrictf(i)=c;
     end
         
 end
 
 
-function predictedLabels = TFOrderBinningScott(noStemTerms, stemTerms) 
+function predictedLabels = TFOrderBinningFD(noStemTerms, stemTerms) 
     QIDNoStem = unique(noStemTerms.QueryID);
     QIDStem = unique(noStemTerms.QueryID);
     if ~isequal(QIDNoStem,QIDStem) 
