@@ -16,13 +16,8 @@ STEMMERS={'KStem'};
 %TWS={'BM25' 'LGD' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'PL2'};
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
-<<<<<<< HEAD
 MEASURES={'MAP'};
 COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' 'MQ07' 'MQ08' 'MQ09'};
-=======
-MEASURES={'NDCG20'};
-COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'  };
->>>>>>> a90da1b0ec15bb5af5477e9c2b1b11c2a996a9db
 %COLLECTIONS={ 'CW09B'};
 
 
@@ -62,14 +57,10 @@ for s = 1:size(STEMMERS,2)
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s},TF);
 %                             end
 %                             Joined=vertcat(Joined,JoinedT);
-<<<<<<< HEAD
             %        Sf=[ 	1 2  10 18 27   47 48  52 54 55]; %CW09B
                     Sf=[ 1  2   4 5   7  8  9 10  12 13   15    17    ];
                     %3   4   7   9  10  11  13  15  17  20  23  26  27  31  32  37  41  42  43  45  47  48  49  51  53  56
-=======
-                    %Sf=[1 2 9 10 11 18 19 21 24 27 31 33 35 37 40 42  45 46 51 54];
-                    %Sf=[ 1 2  10 18 27   47 48 52 54 55 56 ]; %CW09B
->>>>>>> a90da1b0ec15bb5af5477e9c2b1b11c2a996a9db
+
                     %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
                    Sf=[  1 2  10 18 27   47 48  52 54 55  ]
                      SelectedFeatures=Joined(:,{... 
@@ -125,15 +116,9 @@ for s = 1:size(STEMMERS,2)
 
                     if option==0
                         %Core=[1 2 10 18 27 30 41 47 48 52 55 56];
-<<<<<<< HEAD
                         Core=[];    
                           parfor S =[1:56]
                             fileID = fopen('runtopic5.txt','a');
-=======
-                        Core=[1 2 3 10 18 27   47 48 51 52 54 55];    
-                          for S =[4:9,11:17,19:26,28:46,49,50,53,56,57]
-   
->>>>>>> a90da1b0ec15bb5af5477e9c2b1b11c2a996a9db
                             SubFeatures=SelectedFeatures(:,[S Core]);
                             X=table2array(SubFeatures);
                             
@@ -161,11 +146,7 @@ for s = 1:size(STEMMERS,2)
                                     predictedlabel(i)=labels;
                                 end
 
-<<<<<<< HEAD
                             [ms, significant, m1, m2, oracle,p ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-=======
-                            [ms, significant, m1, m2, oracle, p ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
->>>>>>> a90da1b0ec15bb5af5477e9c2b1b11c2a996a9db
                             fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f Add: %d %s %s %s\n',func2str(functions{K}),...
                                 ms,significant,m1,m2,oracle,p,S,dataNameR,dataNameF,strjoin(SubFeatures.Properties.VariableNames));
                            
