@@ -10,6 +10,7 @@ load('WSJ.mat');
 load('FeaturesTerm.mat');
 load('CollectionStats.mat');
 
+STEMMERS={'KStem'};
 TWS={'BM25' 'LGD' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'PL2'};
 MEASURES={'NDCG20'  'NDCG100' 'MAP'};
 COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'  };
@@ -81,11 +82,11 @@ for s = 1:size(STEMMERS,2)
                       ff=ff+inmodel;
                     
 
-                    fb=zeros(1,featureSize);
-                    
-                       [inmodel,history] = sequentialfs(@criteriaFunCubicKNN,X,Y,'cv',numSample,'direction','backward','options',opts);
-                       fb=fb+inmodel;
-                    
+%                     fb=zeros(1,featureSize);
+%                     
+%                        [inmodel,history] = sequentialfs(@criteriaFunCubicKNN,X,Y,'cv',numSample,'direction','backward','options',opts);
+%                        fb=fb+inmodel;
+%                     
 
                     fileID = fopen(strcat('ff','criteriaFunCubicKNN',STEMMERS{s},dataNameR,'.txt'),'w');
                     fprintf(fileID,'%i\t',ff);
