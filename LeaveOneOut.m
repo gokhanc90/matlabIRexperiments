@@ -57,12 +57,12 @@ for s = 1:size(STEMMERS,2)
 %                                 JoinedT = extTrainData(COLLECTIONS{coll},MEASURES{measure},TWS{tw},STEMMERS{s},TF);
 %                             end
 %                             Joined=vertcat(Joined,JoinedT);
-            %        Sf=[ 	1 2  10 18 27   47 48  52 54 55]; %CW09B
+            %        Sf=[ 	1 2  10 18 30   47 48  52 54 55]; %CW09B
                     Sf=[ 1 2  10 18 27   47 48  52 54 55   ];
                     %3   4   7   9  10  11  13  15  17  20  23  26  27  31  32  37  41  42  43  45  47  48  49  51  53  56
 
                     %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
-                   Sf=[  1 2  10 18 27   47 48  52 54 55  ]
+                   Sf=[  1 2  10 18 30   47 48  52 54 55  ]
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
                     'VarCTI','MaxCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',... %19
@@ -238,7 +238,12 @@ for s = 1:size(STEMMERS,2)
                             [ms, significant, m1, m2, oracle,p, bestSingle, sellArr ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
                             fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s %s\n',func2str(functions{K}),...
                                 ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
-                            Trisklist=[sellArr';bestSingle'];
+                            TrisklistSellStem=[sellArr';Y(:,2)'];
+                            TrisklistSellNoStem=[sellArr';Y(:,1)'];
+                            TrisklistNoStemStem=[Y(:,1)';Y(:,2)'];
+                            
+                            [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05)
+                            [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05)
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
                        %  end
@@ -633,7 +638,7 @@ function corrTable = IdfOrderDist(noStemTerms, stemTerms)
         
         %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
         c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
-        if( c> 0.5 ) 
+        if( c> 0.7 ) 
             predictedLabel=1;
         else
             predictedLabel=0;
@@ -715,7 +720,7 @@ function corrTable = ictfOrderDist(noStemTerms, stemTerms)
         
         %if(lev(termsNoStem.Position, termsStem.Position)/wordCount > 0.1) 
         c=corr(termsNoStem.Position,termsStem.Position,'Type','Spearman');
-        if( c> 0.5 ) 
+        if( c> 0.7 ) 
             predictedLabel=1;
         else
             predictedLabel=0;
