@@ -17,7 +17,7 @@ STEMMERS={'KStem'};
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
 MEASURES={'NDCG20'};
-COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={  'MQ07' 'MQ08' 'MQ09'};
 %COLLECTIONS={ 'CW09B'};
 
 
@@ -106,7 +106,7 @@ for s = 1:size(STEMMERS,2)
                     % @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
                     % 	@criteriaFunMediumKNN ,@criteriaFunSVM }; % , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic 
 
-                    functions={@criteriaFunCubicKNN};
+                    functions={@knnIR};
 
 
                     Y=[table2array(Scores) label];
@@ -242,8 +242,8 @@ for s = 1:size(STEMMERS,2)
                             TrisklistSellNoStem=[sellArr';Y(:,1)'];
                             TrisklistNoStemStem=[Y(:,1)';Y(:,2)'];
                             
-                            [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05)
-                            [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05)
+                            [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05);
+                            [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05);
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
                        %  end
