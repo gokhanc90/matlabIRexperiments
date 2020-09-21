@@ -17,7 +17,7 @@ STEMMERS={'KStem' };
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
 MEASURES={'NDCG20' };
-COLLECTIONS={ 'CW09B' 'CW12B'  'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 %COLLECTIONS={ 'CW09B'};
 
 
@@ -61,8 +61,8 @@ for s = 1:size(STEMMERS,2)
                     Sf=[ 1 2  10 18 27   47 48  52 54 55   ];
                     %3   4   7   9  10  11  13  15  17  20  23  26  27  31  32  37  41  42  43  45  47  48  49  51  53  56
 
-                    %Sf=[  28 2 18 10 47 48 54 55 56]; %CW12B
-                   Sf=[  1 2  10 18 30 52   48     54 55  ];
+                   %Sf=[  1 2  10 18 30   47   48   52  54 55  ];
+                   Sf=[  1 2  10 18 30    48   52  54 55  ];
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
                     'VarCTI','MaxCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',... %19
@@ -89,7 +89,7 @@ for s = 1:size(STEMMERS,2)
                     SelectedFeatures=fillmissing(SelectedFeatures,'constant',0);
                     
 %                            SelectedFeaturesT=SelectedFeaturesT(:,Sf);
-         %          SelectedFeatures=SelectedFeatures(:,Sf);
+                   SelectedFeatures=SelectedFeatures(:,Sf);
                     
             
                     [p,isSig,oracle,label]=getOracle(Joined.NoStem,Joined.(STEMMERS{s}));
@@ -99,7 +99,7 @@ for s = 1:size(STEMMERS,2)
  %                         ScoresT=JoinedT(:,{'NoStem',STEMMERS{s}});
 
 
-                    option=0; %0:combination 1:remove add else: all
+                    option=2; %0:combination 1:remove add else: all
 
                     fileID = fopen('runNN2.txt','a');
                     % functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
@@ -235,27 +235,40 @@ for s = 1:size(STEMMERS,2)
                             diffInx = Y(:,1) ~= Y(:,2);
                             predictedD=predictedlabel(diffInx,:);
                             oD=o(diffInx,:);
+                            Tie=sum(~diffInx)
                             TP = sum(predictedD==oD);
-                            TP=TP+(m-sum(~diffInx));
+                            TP=TP+Tie;
+                            TPNo = sum(predictedD==oD & oD=='0')
+                            TPS = sum(predictedD==oD & oD=='1')
                             
-                            NoTP=sum('0'==oD);
-                            NoTP=NoTP+(m-sum(~diffInx));
+                            
+                            NoAct=sum('0'==oD)
+                            NoAct=NoAct+Tie;
                           
-                            STP=sum('1'==oD);
-                            STP=STP+(m-sum(~diffInx));
-                            
+                            SAct=sum('1'==oD)
+                            SAct=SAct+Tie;
+                            accuarcy = (TP/m)*100
                             [ms, significant, m1, m2, oracle,p, bestSingle, sellArr ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
-                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %d %f %s %s %s %s\n',func2str(functions{K}),...
-                                ms,significant,m1,m2,oracle,p,NN,Exp,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
-                           % fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s %s\n',func2str(functions{K}),...
-                           %     ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
+                           % fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %d %f %s %s %s %s\n',func2str(functions{K}),...
+                           %     ms,significant,m1,m2,oracle,p,NN,Exp,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
+                            fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s %s\n',func2str(functions{K}),...
+                                ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
                            
                             TrisklistSellStem=[sellArr';Y(:,2)'];
                             TrisklistSellNoStem=[sellArr';Y(:,1)'];
                             TrisklistNoStemStem=[Y(:,1)';Y(:,2)'];
-                            
                             [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05);
                             [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05);
+                            
+                           
+                            RND = randi([0,1],[m,1]);
+                            RND = categorical(RND);
+                            [ms, significant, m1, m2, oracle,p, bestSingle, RNDArr ] = AverageNDCG(Y(:,[1 2]),RND);
+                            [h,p]=ttest(sellArr,RNDArr,'Alpha',0.05);
+                            
+                            TriskNoSvsSell=TRisk(Y(:,1),sellArr,1)
+                            TriskSvsSell=TRisk(Y(:,2),sellArr,1)
+                            TriskSvsRandom=TRisk(RNDArr,sellArr,1)
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
                      %    end

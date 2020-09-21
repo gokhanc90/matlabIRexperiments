@@ -2,7 +2,7 @@ function [tRisk] = TRisk(base,run,alpha)
     n=numel(base);
     diff = run - base;
     diff(diff<0)=(alpha+1) * diff(diff<0);
-    meanDiff = mean(diff);
+    meanDiff = mean(diff); %Urisk
     
     sum1 = sum((diff - meanDiff) .* (diff - meanDiff) );
     sum2 = sum(diff - meanDiff);
