@@ -17,7 +17,7 @@ STEMMERS={'KStem' };
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
 MEASURES={'NDCG20' };
-COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 %COLLECTIONS={ 'CW09B'};
 
 
@@ -265,10 +265,23 @@ for s = 1:size(STEMMERS,2)
                             RND = categorical(RND);
                             [ms, significant, m1, m2, oracle,p, bestSingle, RNDArr ] = AverageNDCG(Y(:,[1 2]),RND);
                             [h,p]=ttest(sellArr,RNDArr,'Alpha',0.05);
+                            fprintf(fileID,'rndMs: %f h: %f p: %f\n',ms,h,p);
                             
-                            TriskNoSvsSell=TRisk(Y(:,1),sellArr,1)
-                            TriskSvsSell=TRisk(Y(:,2),sellArr,1)
-                            TriskSvsRandom=TRisk(RNDArr,sellArr,1)
+                            TriskNoSvsSell_0=TRisk(Y(:,1),sellArr,0)
+                            TriskSvsSell_0=TRisk(Y(:,2),sellArr,0)
+                            TriskSvsRandom_0=TRisk(RNDArr,sellArr,0)
+                            fprintf(fileID,'alpha0_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_0,TriskSvsSell_0,TriskSvsRandom_0);
+
+                            TriskNoSvsSell_1=TRisk(Y(:,1),sellArr,1)
+                            TriskSvsSell_1=TRisk(Y(:,2),sellArr,1)
+                            TriskSvsRandom_1=TRisk(RNDArr,sellArr,1)
+                            fprintf(fileID,'alpha1_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_1,TriskSvsSell_1,TriskSvsRandom_1);
+
+                            TriskNoSvsSell_5=TRisk(Y(:,1),sellArr,5)
+                            TriskSvsSell_5=TRisk(Y(:,2),sellArr,5)
+                            TriskSvsRandom_5=TRisk(RNDArr,sellArr,5)
+                            fprintf(fileID,'alpha5_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_5,TriskSvsSell_5,TriskSvsRandom_5);
+
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
                      %    end
