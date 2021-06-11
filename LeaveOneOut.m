@@ -20,6 +20,12 @@ MEASURES={'NDCG20' };
 COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 %COLLECTIONS={ 'CW09B'};
 
+% RISK GRAPH
+gca=figure();
+t = tiledlayout(4,2,'TileSpacing','none','Padding','compact');
+xlabel(t,'Number of Queries')
+ylabel(t,'Diff. in nDCG@20')
+% RISK GRAPH END
 
 for s = 1:size(STEMMERS,2)
    for tw = 1:size(TWS,2)
@@ -270,6 +276,13 @@ for s = 1:size(STEMMERS,2)
                             TriskNoSvsSell_0=TRisk(Y(:,1),sellArr,0)
                             TriskSvsSell_0=TRisk(Y(:,2),sellArr,0)
                             TriskSvsRandom_0=TRisk(RNDArr,sellArr,0)
+                            
+                            [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','trisk','baseline',[1])
+                            [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','trisk','baseline',[1])
+                            
+                            [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','grisk','baseline',[1])
+                            [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','grisk','baseline',[1])
+                            
                             fprintf(fileID,'alpha0_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_0,TriskSvsSell_0,TriskSvsRandom_0);
 
                             TriskNoSvsSell_1=TRisk(Y(:,1),sellArr,1)
@@ -286,6 +299,34 @@ for s = 1:size(STEMMERS,2)
                         %    runtopic.Properties.VariableNames{end}='All';
                      %    end
                      %    end
+                     
+                            % R?SK GRAPH
+                            diff = sellArr-Y(:,2);
+                            sortedDiff = sort(diff);
+
+                            numberOfStemGreater = sum(sortedDiff>0);
+                            perStem = numberOfStemGreater*100/size(runNoStem,1);
+                            perStem=round(perStem);
+                            numberOfNoStemGreater = sum(sortedDiff<0);
+                            perNoStem = numberOfNoStemGreater*100/size(runNoStem,1);
+                            perNoStem = round(perNoStem);
+
+                            perTie= 100-perNoStem-perStem;
+
+                            nexttile
+                            ax=bar(sortedDiff);
+                            ylim([-0.6 0.6])
+                            yticks(-0.6:0.2:0.6)
+
+                            text(0.45,0.85,COLLECTIONS{coll},'Units','normalized')
+
+                            text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized')
+
+                            text(0.05,0.25,'Stem > Sel','Units','normalized')
+                            text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized')
+
+                            text(0.8,0.75,'Sel > Stem','Units','normalized')
+                            text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized')
                         end
                     end
                 

@@ -53,7 +53,7 @@ for tw = 1:size(TWS,2)
             largerInd = find(avg>avg(NoStemIndex));
             table2 = table(:,largerInd);
            
-                [p,tbl] = kruskalwallis(table2array(table2),[],'off');
+                [p,tbl] = friedman(table2array(table2),1,'off');
                 fprintf("%s %.4f %d\n",dataNameR,p, tbl{2,3})
 
             
