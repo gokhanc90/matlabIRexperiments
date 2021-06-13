@@ -301,14 +301,14 @@ for s = 1:size(STEMMERS,2)
                      %    end
                      
                             % R?SK GRAPH
-                            diff = sellArr-Y(:,2);
+                            diff = sellArr-Y(:,1);
                             sortedDiff = sort(diff);
 
                             numberOfStemGreater = sum(sortedDiff>0);
-                            perStem = numberOfStemGreater*100/size(runNoStem,1);
+                            perStem = numberOfStemGreater*100/size(sortedDiff,1);
                             perStem=round(perStem);
                             numberOfNoStemGreater = sum(sortedDiff<0);
-                            perNoStem = numberOfNoStemGreater*100/size(runNoStem,1);
+                            perNoStem = numberOfNoStemGreater*100/size(sortedDiff,1);
                             perNoStem = round(perNoStem);
 
                             perTie= 100-perNoStem-perStem;
@@ -322,10 +322,10 @@ for s = 1:size(STEMMERS,2)
 
                             text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized')
 
-                            text(0.05,0.25,'Stem > Sel','Units','normalized')
+                            text(0.05,0.25,'NoStem > Sel','Units','normalized')
                             text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized')
 
-                            text(0.8,0.75,'Sel > Stem','Units','normalized')
+                            text(0.8,0.75,'Sel > NoStem','Units','normalized')
                             text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized')
                         end
                     end
