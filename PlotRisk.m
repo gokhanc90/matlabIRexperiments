@@ -18,8 +18,6 @@ COLLECTIONS={ 'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'  };
 
 gca=figure();
 t = tiledlayout(4,2,'TileSpacing','none','Padding','compact');
-xlabel(t,'Number of Queries')
-ylabel(t,'Diff. in nDCG@20')
 for tw = 1:size(TWS,2)
         for measure = 1:size(MEASURES,2)
             for coll = 1:size(COLLECTIONS,2)
@@ -60,3 +58,6 @@ for tw = 1:size(TWS,2)
             end
         end
 end
+xlabel(t,'Number of Queries','FontSize',15)
+ylabel(t,'Diff. in nDCG@20','FontSize',15)
+set(findall(gca,'-property','FontSize'),'FontSize',14)

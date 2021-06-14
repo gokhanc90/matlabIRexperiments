@@ -23,8 +23,6 @@ COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
 % RISK GRAPH
 gca=figure();
 t = tiledlayout(4,2,'TileSpacing','none','Padding','compact');
-xlabel(t,'Number of Queries')
-ylabel(t,'Diff. in nDCG@20')
 % RISK GRAPH END
 
 for s = 1:size(STEMMERS,2)
@@ -300,8 +298,10 @@ for s = 1:size(STEMMERS,2)
                      %    end
                      %    end
                      
-                            % R?SK GRAPH
-                            diff = sellArr-Y(:,1);
+                            % RISK GRAPH
+                            %diff = sellArr-Y(:,2);
+                            [p,isSig,oracle,label] = getOracle(Y(:,1),Y(:,2));
+                            diff = sellArr-oracle;
                             sortedDiff = sort(diff);
 
                             numberOfStemGreater = sum(sortedDiff>0);
@@ -318,15 +318,15 @@ for s = 1:size(STEMMERS,2)
                             ylim([-0.6 0.6])
                             yticks(-0.6:0.2:0.6)
 
-                            text(0.45,0.85,COLLECTIONS{coll},'Units','normalized')
+                            text(0.45,0.85,COLLECTIONS{coll},'Units','normalized','FontSize',13)
 
-                            text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized')
+                            text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized','FontSize',13)
 
-                            text(0.05,0.25,'NoStem > Sel','Units','normalized')
-                            text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized')
+                            text(0.05,0.25,'Oracle > Sel','Units','normalized','FontSize',13)
+                            text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized','FontSize',13)
 
-                            text(0.8,0.75,'Sel > NoStem','Units','normalized')
-                            text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized')
+                            text(0.75,0.78,'Sel > Oracle','Units','normalized','FontSize',13)
+                            text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized','FontSize',13)
                         end
                     end
                 
@@ -336,6 +336,9 @@ for s = 1:size(STEMMERS,2)
             end
         end
    end
+   xlabel(t,'Number of Queries','FontSize',15)
+   ylabel(t,'Diff. in nDCG@20','FontSize',15)
+   set(findall(gca,'-property','FontSize'),'FontSize',14)
 end
 
 function Joined = JoinTables(terms,features,runtopic,TF)
