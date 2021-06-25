@@ -299,9 +299,9 @@ for s = 1:size(STEMMERS,2)
                      %    end
                      
                             % RISK GRAPH
-                            %diff = sellArr-Y(:,2);
-                            [p,isSig,oracle,label] = getOracle(Y(:,1),Y(:,2));
-                            diff = sellArr-oracle;
+                            diff = sellArr-Y(:,1);
+                            %[p,isSig,oracle,label] = getOracle(Y(:,1),Y(:,2));
+                            %diff = sellArr-oracle;
                             sortedDiff = sort(diff);
 
                             numberOfStemGreater = sum(sortedDiff>0);
@@ -315,17 +315,17 @@ for s = 1:size(STEMMERS,2)
 
                             nexttile
                             ax=bar(sortedDiff);
-                            ylim([-0.6 0.6])
-                            yticks(-0.6:0.2:0.6)
+                            ylim([-0.8 0.8])
+                            yticks(-0.8:0.2:0.8)
 
                             text(0.45,0.85,COLLECTIONS{coll},'Units','normalized','FontSize',13)
 
                             text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized','FontSize',13)
 
-                            text(0.05,0.25,'Oracle > Sel','Units','normalized','FontSize',13)
+                            text(0.05,0.25,'NoStem > Sel','Units','normalized','FontSize',13)
                             text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized','FontSize',13)
 
-                            text(0.75,0.78,'Sel > Oracle','Units','normalized','FontSize',13)
+                            text(0.75,0.78,'Sel > NoStem','Units','normalized','FontSize',13)
                             text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized','FontSize',13)
                         end
                     end

@@ -43,8 +43,8 @@ for tw = 1:size(TWS,2)
                 
                 nexttile
                 ax=bar(sortedDiff);
-                ylim([-0.6 0.6])
-                yticks(-0.6:0.2:0.6)
+                ylim([-0.8 0.8])
+                yticks(-0.8:0.2:0.8)
                 
                 text(0.45,0.85,COLLECTIONS{coll},'Units','normalized')
                 
@@ -53,7 +53,7 @@ for tw = 1:size(TWS,2)
                 text(0.05,0.25,'NoStem > Stem','Units','normalized')
                 text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized')
                 
-                text(0.8,0.75,'Stem > NoStem','Units','normalized')
+                text(0.75,0.75,'Stem > NoStem','Units','normalized')
                 text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized')
             end
         end
