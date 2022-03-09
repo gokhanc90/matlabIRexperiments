@@ -1,4 +1,5 @@
-load('Features.mat');
+load('FeaturesWithLovins.mat');
+%load('Features.mat');
 load('CW09B.mat');
 load('CW12B.mat');
 load('GOV2.mat');
@@ -7,28 +8,47 @@ load('MQ08.mat');
 load('MQ09.mat');
 load('NTCIR.mat');
 load('WSJ.mat');
-load('FeaturesTerm.mat')
+%load('FeaturesTerm.mat')
 load('CollectionStats.mat')
 
 
-STEMMERS={'KStem' };
+STEMMERS={'KStem'  'Lovins' 'SnowballEng'};
 %STEMMERS={'KStem'};
 %TWS={'BM25' 'LGD' 'DFIC' 'DFRee' 'DLH13' 'DLM' 'DPH' 'PL2'};
 TWS={ 'BM25'};
 %MEASURES={'MAP' 'NDCG100' 'NDCG20'};
 MEASURES={'NDCG20' };
-COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2' 'WSJ' 'MQ07' 'MQ08' 'MQ09'};
+COLLECTIONS={'CW09B' 'CW12B' 'NTCIR' 'GOV2'  'WSJ' 'MQ07' 'MQ08' 'MQ09' };
 %COLLECTIONS={ 'CW09B'};
 
 % RISK GRAPH
-gca=figure();
-t = tiledlayout(4,2,'TileSpacing','none','Padding','compact');
+% %gca=figure();
+% %t = tiledlayout(4,2,'TileSpacing','none','Padding','compact');
 % RISK GRAPH END
 
+
+Strct = struct;
 for s = 1:size(STEMMERS,2)
    for tw = 1:size(TWS,2)
         for measure = 1:size(MEASURES,2)
             for coll = 1:size(COLLECTIONS,2)
+                dataNameR = strcat(COLLECTIONS{coll},'_',MEASURES{measure},'_',TWS{tw});
+                Strct.(dataNameR) = eval(dataNameR);
+
+                dataNameF = strcat('Feature',COLLECTIONS{coll},STEMMERS{s});
+                Strct.(dataNameF) = eval(dataNameF);
+
+                dataNameFTerms = strcat(dataNameF,'Term');    
+                Strct.(dataNameFTerms) = eval(dataNameFTerms);
+            end
+        end
+   end
+end
+
+for coll = 1:size(COLLECTIONS,2)
+   for tw = 1:size(TWS,2)
+        for measure = 1:size(MEASURES,2)
+            for  s = 1:size(STEMMERS,2)
                 
                     %Sf=[1   2   3   5   6   7   8   9  15   16 17  18  20  22  25  26   30  33  36]; %CW12B
                     %Sf=[3   4   9  10  11  12  15  16  19  22  24  27  28  29  32  33  34  37]; %GOV2
@@ -44,14 +64,18 @@ for s = 1:size(STEMMERS,2)
                     TF = CollectionStats.(strcat(COLLECTIONS{coll},'TermCount'));
                     
                     dataNameR = strcat(COLLECTIONS{coll},'_',MEASURES{measure},'_',TWS{tw});
-                    runtopic = eval(dataNameR);
-
+                    
+                    %runtopic = eval(dataNameR);
+                    runtopic = Strct.(dataNameR);
                     
                     dataNameF = strcat('Feature',COLLECTIONS{coll},STEMMERS{s});
-                    features = eval(dataNameF);
+                    %features = eval(dataNameF);
+                    features = Strct.(dataNameF);
+
 
                     dataNameFTerms = strcat(dataNameF,'Term');    
-                    terms=eval(dataNameFTerms);
+                    %terms=eval(dataNameFTerms);
+                    terms = Strct.(dataNameFTerms);
                     
                     Joined = JoinTables(terms,features,runtopic,TF);
 %                             if strcmp(COLLECTIONS{coll},'WSJ')
@@ -65,8 +89,9 @@ for s = 1:size(STEMMERS,2)
                     Sf=[ 1 2  10 18 27   47 48  52 54 55   ];
                     %3   4   7   9  10  11  13  15  17  20  23  26  27  31  32  37  41  42  43  45  47  48  49  51  53  56
 
-                   %Sf=[  1 2  10 18 30   47   48   52  54 55  ];
-                   Sf=[  1 2  10 18 30    48   52  54 55  ];
+                   %Sf=[  2   3   8  10  12  14  15  16  18  20  21  24  28  31  33  34  35  36  38  43  53  54  57  ];
+                   %Sf=[  1 2  10 18 30    48   52  54 55  ];
+                   Sf=[  1 2  10 18  24  30   48   52  54 55   ];
                      SelectedFeatures=Joined(:,{... 
                     'Gamma','Omega','AvgPMI','MaxPMI','SCS','MeanICTF','VarICTF','MeanIDF','VarIDF','MaxIDF','MeanCTI',... %11
                     'VarCTI','MaxCTI','MeanSkew','VarSkew','MeanKurt','VarKurt','MeanSCQ','VarSCQ',... %19
@@ -105,12 +130,15 @@ for s = 1:size(STEMMERS,2)
 
                     option=2; %0:combination 1:remove add else: all
 
-                    fileID = fopen('runNN2.txt','a');
-                    % functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
-                    % @criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,@criteriaFunGaussianNaiveBayes ,...
-                    % 	@criteriaFunMediumKNN ,@criteriaFunSVM }; % , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic 
 
-                    functions={@knnIR2};
+                     %functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
+                     %@criteriaFunEnsembleSubspaceDiscriminant ,@criteriaFunEnsembleSubspaceKNN ,@criteriaFunFineTree ,...
+                     %	@criteriaFunMediumKNN ,@criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic,@criteriaFunSVM }; % , @criteriaFunGaussianNaiveBayes , @criteriaFunCubicKNN, @criteriaFunEnsembleRUSBoost ,@criteriaFunDiscriminateQuadratic 
+                    %functions={@criteriaDiscriminant};
+
+                    functions={@knnIR2};%, @criteriaFunFineTree, @criteriaFunDiscriminateQuadratic, @criteriaFunGaussianNaiveBayes};
+
+                    fileID = fopen('runNN4.txt','a');
 
 
                     Y=[table2array(Scores) label];
@@ -229,104 +257,104 @@ for s = 1:size(STEMMERS,2)
 %                                   Xtrain=Xtrain(~trainSetInx,:);
 %                                  Ytrain=Ytrain(~trainSetInx,:);
                                   
-                                [criterion, ms, significant, m1, m2, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest,11,3);
+                                [criterion, ms, significant, m1, m2, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest);
                                 predictionScores(i)=ms; 
                                 predictedlabel(i)=labels;
                             end
 
                             % Accuracy
-                            o = categorical(Y(:,3));
-                            diffInx = Y(:,1) ~= Y(:,2);
-                            predictedD=predictedlabel(diffInx,:);
-                            oD=o(diffInx,:);
-                            Tie=sum(~diffInx)
-                            TP = sum(predictedD==oD);
-                            TP=TP+Tie;
-                            TPNo = sum(predictedD==oD & oD=='0')
-                            TPS = sum(predictedD==oD & oD=='1')
-                            
-                            
-                            NoAct=sum('0'==oD)
-                            NoAct=NoAct+Tie;
-                          
-                            SAct=sum('1'==oD)
-                            SAct=SAct+Tie;
-                            accuarcy = (TP/m)*100
+% %                             o = categorical(Y(:,3));
+% %                             diffInx = Y(:,1) ~= Y(:,2);
+% %                             predictedD=predictedlabel(diffInx,:);
+% %                             oD=o(diffInx,:);
+% %                             Tie=sum(~diffInx)
+% %                             TP = sum(predictedD==oD);
+% %                             TP=TP+Tie;
+% %                             TPNo = sum(predictedD==oD & oD=='0')
+% %                             TPS = sum(predictedD==oD & oD=='1')
+% %                             
+% %                             
+% %                             NoAct=sum('0'==oD)
+% %                             NoAct=NoAct+Tie;
+% %                           
+% %                             SAct=sum('1'==oD)
+% %                             SAct=SAct+Tie;
+% %                             accuarcy = (TP/m)*100
                             [ms, significant, m1, m2, oracle,p, bestSingle, sellArr ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
                            % fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %d %f %s %s %s %s\n',func2str(functions{K}),...
                            %     ms,significant,m1,m2,oracle,p,NN,Exp,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
                             fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f %0.2f %s %s %s %s\n',func2str(functions{K}),...
                                 ms,significant,m1,m2,oracle,p,dataNameR,dataNameF,strjoin(SelectedFeatures.Properties.VariableNames),num2str(Sf));
-                           
-                            TrisklistSellStem=[sellArr';Y(:,2)'];
-                            TrisklistSellNoStem=[sellArr';Y(:,1)'];
-                            TrisklistNoStemStem=[Y(:,1)';Y(:,2)'];
-                            [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05);
-                            [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05);
-                            
-                           
-                            RND = randi([0,1],[m,1]);
-                            RND = categorical(RND);
-                            [ms, significant, m1, m2, oracle,p, bestSingle, RNDArr ] = AverageNDCG(Y(:,[1 2]),RND);
-                            [h,p]=ttest(sellArr,RNDArr,'Alpha',0.05);
-                            fprintf(fileID,'rndMs: %f h: %f p: %f\n',ms,h,p);
-                            
-                            TriskNoSvsSell_0=TRisk(Y(:,1),sellArr,0)
-                            TriskSvsSell_0=TRisk(Y(:,2),sellArr,0)
-                            TriskSvsRandom_0=TRisk(RNDArr,sellArr,0)
-                            
-                            [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','trisk','baseline',[1])
-                            [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','trisk','baseline',[1])
-                            
-                            [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','grisk','baseline',[1])
-                            [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','grisk','baseline',[1])
-                            
-                            fprintf(fileID,'alpha0_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_0,TriskSvsSell_0,TriskSvsRandom_0);
-
-                            TriskNoSvsSell_1=TRisk(Y(:,1),sellArr,1)
-                            TriskSvsSell_1=TRisk(Y(:,2),sellArr,1)
-                            TriskSvsRandom_1=TRisk(RNDArr,sellArr,1)
-                            fprintf(fileID,'alpha1_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_1,TriskSvsSell_1,TriskSvsRandom_1);
-
-                            TriskNoSvsSell_5=TRisk(Y(:,1),sellArr,5)
-                            TriskSvsSell_5=TRisk(Y(:,2),sellArr,5)
-                            TriskSvsRandom_5=TRisk(RNDArr,sellArr,5)
-                            fprintf(fileID,'alpha5_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_5,TriskSvsSell_5,TriskSvsRandom_5);
+% % %                            
+% % %                             TrisklistSellStem=[sellArr';Y(:,2)'];
+% % %                             TrisklistSellNoStem=[sellArr';Y(:,1)'];
+% % %                             TrisklistNoStemStem=[Y(:,1)';Y(:,2)'];
+% % %                             [h,p]=ttest(sellArr,Y(:,1),'Alpha',0.05);
+% % %                             [h,p]=ttest(sellArr,Y(:,2),'Alpha',0.05);
+% % %                             
+% % %                            
+% % %                             RND = randi([0,1],[m,1]);
+% % %                             RND = categorical(RND);
+% % %                             [ms, significant, m1, m2, oracle,p, bestSingle, RNDArr ] = AverageNDCG(Y(:,[1 2]),RND);
+% % %                             [h,p]=ttest(sellArr,RNDArr,'Alpha',0.05);
+% % %                             fprintf(fileID,'rndMs: %f h: %f p: %f\n',ms,h,p);
+% % %                             
+% % %                             TriskNoSvsSell_0=TRisk(Y(:,1),sellArr,0)
+% % %                             TriskSvsSell_0=TRisk(Y(:,2),sellArr,0)
+% % %                             TriskSvsRandom_0=TRisk(RNDArr,sellArr,0)
+% % %                             
+% % %                             [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','trisk','baseline',[1])
+% % %                             [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','trisk','baseline',[1])
+% % %                             
+% % %                             [scores] = riskscore([Y(:,1)'; sellArr'],[0,1,5],{'NoStem','Sel'},'measure','grisk','baseline',[1])
+% % %                             [scores] = riskscore([Y(:,2)'; sellArr'],[0,1,5],{'Stem','Sel'},'measure','grisk','baseline',[1])
+% % %                             
+% % %                             fprintf(fileID,'alpha0_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_0,TriskSvsSell_0,TriskSvsRandom_0);
+% % % 
+% % %                             TriskNoSvsSell_1=TRisk(Y(:,1),sellArr,1)
+% % %                             TriskSvsSell_1=TRisk(Y(:,2),sellArr,1)
+% % %                             TriskSvsRandom_1=TRisk(RNDArr,sellArr,1)
+% % %                             fprintf(fileID,'alpha1_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_1,TriskSvsSell_1,TriskSvsRandom_1);
+% % % 
+% % %                             TriskNoSvsSell_5=TRisk(Y(:,1),sellArr,5)
+% % %                             TriskSvsSell_5=TRisk(Y(:,2),sellArr,5)
+% % %                             TriskSvsRandom_5=TRisk(RNDArr,sellArr,5)
+% % %                             fprintf(fileID,'alpha5_N_S_Rnd:\t%0.4f\t%0.4f\t%0.4f \n',TriskNoSvsSell_5,TriskSvsSell_5,TriskSvsRandom_5);
 
                        %     runtopic(:,end)=table(predictionScores);
                         %    runtopic.Properties.VariableNames{end}='All';
                      %    end
                      %    end
                      
-                            % RISK GRAPH
-                            diff = sellArr-Y(:,1);
-                            %[p,isSig,oracle,label] = getOracle(Y(:,1),Y(:,2));
-                            %diff = sellArr-oracle;
-                            sortedDiff = sort(diff);
-
-                            numberOfStemGreater = sum(sortedDiff>0);
-                            perStem = numberOfStemGreater*100/size(sortedDiff,1);
-                            perStem=round(perStem);
-                            numberOfNoStemGreater = sum(sortedDiff<0);
-                            perNoStem = numberOfNoStemGreater*100/size(sortedDiff,1);
-                            perNoStem = round(perNoStem);
-
-                            perTie= 100-perNoStem-perStem;
-
-                            nexttile
-                            ax=bar(sortedDiff);
-                            ylim([-0.8 0.8])
-                            yticks(-0.8:0.2:0.8)
-
-                            text(0.45,0.85,COLLECTIONS{coll},'Units','normalized','FontSize',13)
-
-                            text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized','FontSize',13)
-
-                            text(0.05,0.25,'NoStem > Sel','Units','normalized','FontSize',13)
-                            text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized','FontSize',13)
-
-                            text(0.75,0.78,'Sel > NoStem','Units','normalized','FontSize',13)
-                            text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized','FontSize',13)
+% %                             % RISK GRAPH
+% %                             diff = sellArr-Y(:,1);
+% %                             %[p,isSig,oracle,label] = getOracle(Y(:,1),Y(:,2));
+% %                             %diff = sellArr-oracle;
+% %                             sortedDiff = sort(diff);
+% % 
+% %                             numberOfStemGreater = sum(sortedDiff>0);
+% %                             perStem = numberOfStemGreater*100/size(sortedDiff,1);
+% %                             perStem=round(perStem);
+% %                             numberOfNoStemGreater = sum(sortedDiff<0);
+% %                             perNoStem = numberOfNoStemGreater*100/size(sortedDiff,1);
+% %                             perNoStem = round(perNoStem);
+% % 
+% %                             perTie= 100-perNoStem-perStem;
+% % 
+% %                             nexttile
+% %                             ax=bar(sortedDiff);
+% %                             ylim([-0.8 0.8])
+% %                             yticks(-0.8:0.2:0.8)
+% % 
+% %                             text(0.45,0.85,COLLECTIONS{coll},'Units','normalized','FontSize',13)
+% % 
+% %                             text(0.45,0.60,[num2str(perTie),'%'],'Units','normalized','FontSize',13)
+% % 
+% %                             text(0.05,0.25,'NoStem > Sel','Units','normalized','FontSize',13)
+% %                             text(0.05,0.60,[num2str(perNoStem),'%'],'Units','normalized','FontSize',13)
+% % 
+% %                             text(0.75,0.78,'Sel > NoStem','Units','normalized','FontSize',13)
+% %                             text(0.9,0.40,[num2str(perStem),'%'],'Units','normalized','FontSize',13)
                         end
                     end
                 
@@ -336,9 +364,9 @@ for s = 1:size(STEMMERS,2)
             end
         end
    end
-   xlabel(t,'Number of Queries','FontSize',15)
-   ylabel(t,'Diff. in nDCG@20','FontSize',15)
-   set(findall(gca,'-property','FontSize'),'FontSize',14)
+% %    xlabel(t,'Number of Queries','FontSize',15)
+% %    ylabel(t,'Diff. in nDCG@20','FontSize',15)
+% %    set(findall(gca,'-property','FontSize'),'FontSize',14)
 end
 
 function Joined = JoinTables(terms,features,runtopic,TF)

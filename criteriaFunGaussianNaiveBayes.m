@@ -1,15 +1,17 @@
-function [criterion, ms, significant, m1, m2, oracle,labels ] = criteriaFunGaussianNaiveBayes(trainX2,trainY2,testX,testY)
+function [criterion, ms, significant, m1, m2, oracle,labels ] = criteriaFunGaussianNaiveBayes(trainX,trainY,testX,testY)
 %CRITERIAFUN Summary of this function goes here
 %   Detailed explanation goes here
-LabelsY=categorical(trainY2(:,3));
+LabelsY=categorical(trainY(:,3));
+
 
 % 
 %Gaussian Naive Bayes%
-distributionNames =  repmat({'normal'}, 1, size(trainX2,2));
+%distributionNames =  repmat({'normal'}, 1, size(trainX2,2));
+
 Mdl = fitcnb(...
-        trainX2, ...
+        trainX, ...
         LabelsY, ...
-        'DistributionNames', distributionNames, ...
+        'DistributionNames', {'normal','normal','normal','normal','normal','kernel','normal','normal','kernel'}, ...
         'ClassNames', categorical({'0'; '1'}));
  
 

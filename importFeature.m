@@ -25,7 +25,7 @@ opts = setvaropts(opts, "WordCount", "EmptyFieldRule", "auto");
 opts = setvaropts(opts, ["QueryID", "Gamma", "Omega", "AvgPMI", "MaxPMI", "SCS", "MeanICTF", "VarICTF", "MeanIDF", "MaxIDF", "VarIDF", "MeanCTI", "VarCTI", "MaxCTI", "MeanSkew", "VarSkew", "MeanKurt", "VarKurt", "MeanSCQ", "VarSCQ", "MaxSCQ", "SumSCQ", "MeanCommonality", "VarCommonality", "SCCS", "MeanSCCQ", "VarSCCQ", "MeanAdvance", "MaxAdvance", "VarAdvance", "MeanAdvanceTF", "MaxAdvanceTF", "VarAdvanceTF", "MeanAdvanceDF", "MaxAdvanceDF", "VarAdvanceDF", "BM25", "DLM", "LGD", "PL2", "DFIC", "DPH", "DLH13", "DFRee", "AvgQL"], "FillValue", 0);
 
 % Import the data
-FeatureGOV2SnowballEng = readtable("/home/ubuntu/Desktop/Data/Features/FeatureGOV2Snowball.txt", opts);
+FeatureWSJLovins = readtable("/home/ubuntu/Desktop/Data/Features/FeatureWSJLovins.txt", opts);
 
 
 %% Clear temporary variables

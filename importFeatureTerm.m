@@ -26,7 +26,7 @@ opts = setvaropts(opts, "word", "WhitespaceRule", "preserve");
 opts = setvaropts(opts, "word", "EmptyFieldRule", "auto");
 
 % Import the data
-FeatureCW12BKStemTerm = readtable("/home/ubuntu/Desktop/Data/Features/FeatureCW12BKStemTerm.txt", opts);
+FeatureWSJLovinsTerm = readtable("/home/ubuntu/Desktop/Data/Features/FeatureWSJLovinsTerm.txt", opts);
 
 
 %% Clear temporary variables

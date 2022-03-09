@@ -1,7 +1,8 @@
-function [criterion, ms, significant, m1, m2,oracle, labels  ] = knnIR2(trainX,trainY,testX,testY,k,Exp)
+function [criterion, ms, significant, m1, m2,oracle, labels  ] = knnIR2(trainX,trainY,testX,testY)
 %KNNIR Summary of this function goes here
 %   Detailed explanation goes here
-%k=9;
+k=11;
+Exp=3;
 [Z,mu,sigma] = zscore(trainX);
 testX = (testX-mu) ./ sigma;
 trainX = normalize(trainX);
