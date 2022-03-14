@@ -128,7 +128,7 @@ for coll = 1:size(COLLECTIONS,2)
  %                         ScoresT=JoinedT(:,{'NoStem',STEMMERS{s}});
 
 
-                    option=2; %0:combination 1:remove add else: all
+                    option=1; %0:combination 1:remove add else: all
 
 
                      %functions={@criteriaFunCoarseKNN,@criteriaFunCubicKNN ,@criteriaFunEnsembleRUSBoost ,...
@@ -138,7 +138,7 @@ for coll = 1:size(COLLECTIONS,2)
 
                     functions={@knnIR2};%, @criteriaFunFineTree, @criteriaFunDiscriminateQuadratic, @criteriaFunGaussianNaiveBayes};
 
-                    fileID = fopen('runNN4.txt','a');
+                    fileID = fopen('ablation.txt','a');
 
 
                     Y=[table2array(Scores) label];
@@ -196,7 +196,8 @@ for coll = 1:size(COLLECTIONS,2)
                     elseif  option==1   
                         for S =1:n
                             %X=table2array(SelectedFeatures(:,S));
-                            X=table2array(SelectedFeatures(:,[1:S-1,S+1:end]));
+                            Sub = SelectedFeatures(:,[1:S-1,S+1:end]);
+                            X=table2array(Sub);
                             for K = 1 : length(functions)
 
                                 predictionScores=zeros(m,1);
@@ -214,13 +215,13 @@ for coll = 1:size(COLLECTIONS,2)
 
                                     
                                     [criterion, ms, significant, m1, m2, oracle,labels ]  = functions{K}(Xtrain,Ytrain,Xtest,Ytest);
-                                    predictionScores(i)=ms; 
-                                    predictedlabel(i)=labels;
+                                predictionScores(i)=ms; 
+                                predictedlabel(i)=labels;
                                 end
 
-                                [ms, significant, m1, m2, oracle ] = AverageNDCG(table2array(Scores),predictedlabel);
-                                fprintf(fileID,'MLFunc: %s Mean: %f Sig: %d NoStemMean: %f StemMean: %f Oracle: %f Discard: %s %s %s\n',func2str(functions{K}),...
-                                    ms,significant,m1,m2,oracle, SelectedFeatures.Properties.VariableNames{S},dataNameR,dataNameF);
+                                [ms, significant, m1, m2, oracle,p, bestSingle, sellArr ] = AverageNDCG(Y(:,[1 2]),predictedlabel);
+                                fprintf(fileID,'Mean: \t %f \t %s \t %s \t %s \t %s \n', ms,SelectedFeatures.Properties.VariableNames{S},strjoin(Sub.Properties.VariableNames),dataNameR,dataNameF);
+% % %                       
                             end
                            %    runtopic(:,S+4)=table(predictionScores);
                            %    runtopic.Properties.VariableNames{S+4}=SelectedFeatures.Properties.VariableNames{S};
